@@ -11,7 +11,7 @@ const relativePublicPaths = (): Plugin => ({
   enforce: "pre",
   transform(code, id) {
     if (!/\/src\/.*\.(ts|tsx)$/.test(id)) return;
-    return code.replace(/(["'`])\/(logos\/|flick-thumbs\/|flick-frame\.html)/g, "$1$2");
+    return code.replace(/(["'`])\/(logos\/|flick-thumbs\/|landing\/|flick-frame\.html)/g, "$1$2");
   },
 });
 

@@ -22,6 +22,8 @@ export type Flick = {
   landingSheet?: { address: string; copy: string; button: string };
   /** Landing site allows being framed in the in-app browser. */
   embeddable?: boolean;
+  /** Phone-width capture of the real landing page (public/landing/), shown scrollable in the in-app browser. */
+  snapshot?: string;
   productName?: string;
   tagTop?: string;
   skuByDiff?: Record<string, { label: string; price?: string }>;
@@ -37,27 +39,27 @@ export const ME = { username: "alex.morgan", avatar: AV(12) };
 
 export const STORY_AD: Flick = {
   id: "story-fashion", flickId: "typxqe", aspect: "9/16", brand: "zara", logo: "/logos/zara.webp", brandName: "Zara",
-  landingUrl: "https://www.zara.com/us/", cta: "Shop now", caption: "New season, new favorites.", embeddable: false,
+  landingUrl: "https://www.zara.com/us/", snapshot: "/landing/zara.jpg", cta: "Shop now", caption: "New season, new favorites.", embeddable: false,
   likes: 0, comments: 0,
 };
 
 export const FEED_AD: Flick = {
   id: "feed-cayman", flickId: "cayman", aspect: "1/1", brand: "visitcaymanislands", logo: "/logos/cayman.webp", brandName: "Cayman Islands",
   displayName: "Cayman Islands", monogram: "C",
-  landingUrl: "https://www.visitcaymanislands.com/", cta: "Book Now", caption: "Island time starts here.", embeddable: false,
+  landingUrl: "https://www.visitcaymanislands.com/", snapshot: "/landing/cayman.jpg", cta: "Book Now", caption: "Island time starts here.", embeddable: false,
   likes: 18422, comments: 312,
 };
 
 export const CREATOR_AD: Flick & { creator: string; creatorAvatar: string } = {
   id: "creator-collab", flickId: "gwhttp", aspect: "1/1", brand: "neweracap", logo: "/logos/neweracap.webp", brandName: "New Era",
-  landingUrl: "https://www.neweracap.com/collections/mlb-headwear", cta: "Shop now", caption: "Game day, every day.", embeddable: false,
+  landingUrl: "https://www.neweracap.com/collections/mlb-headwear", snapshot: "/landing/neweracap.jpg", cta: "Shop now", caption: "Game day, every day.", embeddable: false,
   likes: 42910, comments: 1204,
   creator: "jess.on.the.go", creatorAvatar: AV(47),
 };
 
 export const SHOPPING_AD: Flick & { productName: string; skuByDiff: Record<string, { label: string; price?: string }> } = {
   id: "shopping", flickId: "vq0vp6", aspect: "1/1", brand: "underarmour", logo: "/logos/underarmour.webp", brandName: "Under Armour",
-  landingUrl: "https://www.underarmour.com/en-us/p/heatgear_elite_womens_crop_mock_short_sleeve/6014710.html?dwvar_6014710_color=008", cta: "Shop now", caption: "Built for the work.", embeddable: false,
+  landingUrl: "https://www.underarmour.com/en-us/p/heatgear_elite_womens_crop_mock_short_sleeve/6014710.html?dwvar_6014710_color=008", snapshot: "/landing/underarmour.jpg", cta: "Shop now", caption: "Built for the work.", embeddable: false,
   likes: 9876, comments: 188,
   productName: "HeatGear Elite Crop Mock", tagTop: "20%",
   skuByDiff: { "0": { label: "HeatGear Elite Crop Mock", price: "$35.00" }, "1": { label: "HeatGear Elite Crop Mock", price: "$38.00" }, "2": { label: "HeatGear Elite Crop Mock", price: "$40.00" } },
@@ -65,14 +67,14 @@ export const SHOPPING_AD: Flick & { productName: string; skuByDiff: Record<strin
 
 export const REELS_AD: Flick = {
   id: "reels-auto", flickId: "sfb39l", aspect: "9/16", brand: "gucci", logo: "/logos/gucci.webp", brandName: "Gucci",
-  landingUrl: "https://www.gucci.com/us/en/ca/women/ready-to-wear-for-women/dresses-and-jumpsuits-for-women-c-women-readytowear-dresses", cta: "Shop now", caption: "A new chapter, in motion.", embeddable: false,
+  landingUrl: "https://www.gucci.com/us/en/ca/women/ready-to-wear-for-women/dresses-and-jumpsuits-for-women-c-women-readytowear-dresses", snapshot: "/landing/gucci.jpg", cta: "Shop now", caption: "A new chapter, in motion.", embeddable: false,
   likes: 128400, comments: 2301,
 };
 
 export const FEED_AD_2: Flick = {
   id: "feed-beauty", flickId: "tzed9x", aspect: "1/1", brand: "ultabeauty", logo: "/logos/ultabeauty.webp", brandName: "Ulta",
-  landingUrl: "https://www.ulta.com/p/macximal-silky-matte-lipstick-pimprod2043558?sku=2644466",
-  cta: "Shop now", caption: "Find yours.", embeddable: true, likes: 6421, comments: 94,
+  landingUrl: "https://www.ulta.com/p/macximal-silky-matte-lipstick-pimprod2043558?sku=2644466", snapshot: "/landing/ulta.jpg",
+  cta: "Shop now", caption: "Find yours.", embeddable: false, likes: 6421, comments: 94,
   productName: "MACximal Silky Matte Lipstick", tagTop: "16%",
   skuByDiff: { "0": { label: "MACximal Silky Matte Lipstick", price: "$25.00" }, "1": { label: "MACximal Silky Matte Lipstick", price: "$27.00" }, "2": { label: "MACximal Silky Matte Lipstick", price: "$29.00" } },
 };
@@ -84,30 +86,30 @@ export const FEED_AD_3: Flick = {
 };
 export const REELS_AD_2: Flick = {
   id: "reels-ram", flickId: "cx5dwz", aspect: "9/16", brand: "ramtrucks", logo: "/logos/ramtrucks.webp", brandName: "Ram Trucks",
-  landingUrl: "https://www.ramtrucks.com/",
+  landingUrl: "https://www.ramtrucks.com/", snapshot: "/landing/ram.jpg",
   cta: "Explore", caption: "Built to go further.", embeddable: false, likes: 28400, comments: 309,
 };
 
 const sku = (label: string, prices: string[]) => Object.fromEntries(prices.map((price, i) => [String(i), { label, price }]));
 export const COACH_AD: Flick = {
   id: "feed-coach", flickId: "d81eio", aspect: "1/1", brand: "coach", logo: "/logos/coach.webp", brandName: "Coach",
-  landingUrl: "https://www.coach.com/products/tabby-shoulder-bag-26/CCX04-B4POP.html",
+  landingUrl: "https://www.coach.com/products/tabby-shoulder-bag-26/CCX04-B4POP.html", snapshot: "/landing/coach.jpg",
   cta: "Shop now", caption: "Made to be carried.", embeddable: false, likes: 21840, comments: 402,
   productName: "Tabby Shoulder Bag 26", tagTop: "18%", skuByDiff: sku("Tabby Shoulder Bag 26", ["$450.00", "$475.00", "$495.00"]),
 };
 export const SAMSUNG_AD: Flick = {
   id: "feed-samsung", flickId: "yux3w1", aspect: "1/1", brand: "samsung", logo: "/logos/samsung.webp", brandName: "Samsung",
-  landingUrl: "https://www.samsung.com/us/smartphones/galaxy-s26/buy/galaxy-s26-512gb-unlocked-sku-sm-s942uzdfxaa/",
+  landingUrl: "https://www.samsung.com/us/smartphones/galaxy-s26/buy/galaxy-s26-512gb-unlocked-sku-sm-s942uzdfxaa/", snapshot: "/landing/samsung.jpg",
   cta: "Shop now", caption: "Meet the new Galaxy.", embeddable: true, likes: 64210, comments: 1890,
   productName: "Galaxy S26 512GB Unlocked", tagTop: "6%", skuByDiff: sku("Galaxy S26 512GB Unlocked", ["$999.99", "$1,099.99", "$1,199.99"]),
 };
 export const AVEENO_AD: Flick = {
   id: "explore-aveeno", flickId: "um792g", aspect: "1/1", brand: "aveeno", logo: "/logos/aveeno.webp", brandName: "Aveeno",
-  landingUrl: "https://www.aveeno.com/", cta: "Learn more", caption: "Everyday care, your way.", embeddable: false, likes: 7311, comments: 120,
+  landingUrl: "https://www.aveeno.com/", snapshot: "/landing/aveeno.jpg", cta: "Learn more", caption: "Everyday care, your way.", embeddable: false, likes: 7311, comments: 120,
 };
 export const GM_AD: Flick = {
   id: "feed-gm", flickId: "ccheju", aspect: "1/1", brand: "generalmills", logo: "/logos/generalmills.webp", brandName: "General Mills",
-  landingUrl: "https://www.generalmills.com/our-food/where-to-buy", cta: "Learn more", caption: "Breakfast, the way you like it.", embeddable: false, likes: 12530, comments: 233,
+  landingUrl: "https://www.generalmills.com/our-food/where-to-buy", snapshot: "/landing/generalmills.jpg", cta: "Learn more", caption: "Breakfast, the way you like it.", embeddable: false, likes: 12530, comments: 233,
 };
 
 /* ---------------- Stories tray ---------------- */

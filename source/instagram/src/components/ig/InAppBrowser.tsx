@@ -27,10 +27,10 @@ const Refresh = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none
 
 export function InAppBrowser({ target, onClose }: { target: BrowserTarget; onClose: () => void }) {
   const { flick } = target;
-  const live = !!flick.landingUrl && !!flick.embeddable && !flick.landingSheet;
+  const live = !flick.snapshot && !!flick.landingUrl && !!flick.embeddable && !flick.landingSheet;
   const [load, setLoad] = useState(0);
   const [done, setDone] = useState(false);
-  useEffect(() => { setDone(false); if (live) return; const t = setTimeout(() => setDone(true), 700); return () => clearTimeout(t); }, [live, load]);
+  useEffect(() => { setDone(false); if (live || flick.snapshot) return; const t = setTimeout(() => setDone(true), 700); return () => clearTimeout(t); }, [live, load, flick.snapshot]);
   return <div role="dialog" aria-label="In-app browser" className="animate-ig-sheet absolute inset-0 z-[80] flex flex-col bg-ig-bg text-ig-fg">
     <div className="relative flex h-14 shrink-0 items-center gap-1 border-b border-ig-sep bg-ig-elev px-1">
       <Button variant="ghost" size="icon" aria-label="Close" onClick={onClose} className="text-ig-fg hover:bg-ig-sep"><Close size={24} /></Button>
@@ -42,7 +42,9 @@ export function InAppBrowser({ target, onClose }: { target: BrowserTarget; onClo
       <div className="absolute inset-x-0 bottom-0 h-[2px] overflow-hidden"><div key={load} className={`h-full bg-ig-blue transition-[width,opacity] duration-700 ${done ? "w-full opacity-0" : "w-2/3 opacity-100"}`} /></div>
     </div>
     <div className="relative min-h-0 flex-1 overflow-y-auto">
-      {flick.landingSheet ? <RogersPage /> : live
+      {flick.landingSheet ? <RogersPage /> : flick.snapshot
+        ? <img key={load} src={flick.snapshot} alt={`${flick.brandName} website`} onLoad={() => setDone(true)} className="block w-full bg-ig-fg" />
+        : live
         ? <iframe key={load} src={flick.landingUrl} title={`${flick.brandName} website`} onLoad={() => setDone(true)} className="absolute inset-0 h-full w-full border-0 bg-ig-fg" />
         : <div className="flex flex-col items-center px-6 pt-20 text-center">
           <Avatar logo={flick.logo} monogram={flick.monogram ?? flick.brand} size={80} />
