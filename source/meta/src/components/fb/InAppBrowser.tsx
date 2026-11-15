@@ -43,6 +43,7 @@ export function InAppBrowserProvider({ children }: { children: ReactNode }) {
     <div className="h-0.5 shrink-0 bg-fb-blue" />
     {menu && <div className="absolute right-2 top-14 z-10 rounded-lg border border-fb-sep bg-fb-card p-2 shadow-md">{flick.landingUrl ? <Button asChild variant="ghost"><a href={flick.landingUrl} target="_blank" rel="noopener noreferrer">Open in browser</a></Button> : <span className="px-2 text-[13px] text-fb-muted">Demo page</span>}</div>}
     <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+      {flick.snapshot ? <img src={flick.snapshot} alt={`${flick.displayName ?? flick.brand} website`} className="block w-full" /> : <>
       <div className="flex items-center gap-3 px-4 py-4"><Avatar logo={flick.logo} monogram={flick.displayName ?? flick.brand} size={40} /><div className="min-w-0"><h1 className="text-[18px] font-semibold">{flick.displayName ?? flick.brand}</h1><p className="text-[12px] text-fb-muted">{flick.mock || flick.landingSheet ? "Demo collection" : "Flick preview"}</p></div></div>
       {selected && <img key={selected.image} src={selected.image} alt={`${title} — selected Flick variant`} className="max-h-[52dvh] w-full object-contain bg-fb-elev" />}
       <div className="px-4 py-5">
@@ -53,6 +54,7 @@ export function InAppBrowserProvider({ children }: { children: ReactNode }) {
         {option?.price && !flick.mock && <p className="mt-2 text-[12px] text-fb-muted">Demo price</p>}
         {flick.landingSheet && <Button aria-pressed={pressed} onClick={() => setPressed(v => !v)} className="mt-5 w-full bg-fb-blue text-fb-card hover:bg-fb-blue/90">{pressed ? "Saved" : flick.landingSheet.button}</Button>}
       </div>
+      </>}
     </div>
   </div>}</BrowserContext.Provider></VariantContext.Provider>;
 }
