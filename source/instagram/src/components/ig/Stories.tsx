@@ -5,6 +5,7 @@ import { Close, Heart, More, Share, Verified } from "./Icons";
 import { FlickEmbed } from "./FlickEmbed";
 import { FlickCta } from "./FlickCta";
 import { Button } from "@/components/ui/button";
+import { storyGestureRegions, type StoryPickerBounds } from "./story-gestures";
 
 export function StoriesTray({ onOpen }: { onOpen: (index: number) => void }) {
   return (
@@ -45,6 +46,36 @@ export function StoryViewer({ index, onIndex, onClose }: { index: number; onInde
   const story = STORIES[index] as Story;
   const ad = story.flick ?? null;
   const root = useRef<HTMLDivElement>(null);
+  const [picker, setPicker] = useState<StoryPickerBounds | null>(null);
+  const [size, setSize] = useState({ width: 390, height: 844 });
+  useEffect(() => {
+    setPicker(null);
+    if (!ad) return;
+    const measure = () => {
+      const el = root.current;
+      const frame = el?.querySelector("iframe");
+      if (!el || !frame) return;
+      const screen = el.getBoundingClientRect();
+      setSize(s => s.width === screen.width && s.height === screen.height ? s : { width: screen.width, height: screen.height });
+      try {
+        const swatches = frame.contentDocument?.querySelector("vertex-player")?.shadowRoot?.querySelectorAll(".vx-swatch");
+        if (!swatches?.length) return;
+        const origin = frame.getBoundingClientRect();
+        const rects = [...swatches].map(s => s.getBoundingClientRect()).filter(r => r.width && r.height);
+        if (!rects.length) return;
+        const next = {
+          left: origin.left - screen.left + Math.min(...rects.map(r => r.left)),
+          top: origin.top - screen.top + Math.min(...rects.map(r => r.top)),
+          right: origin.left - screen.left + Math.max(...rects.map(r => r.right)),
+          bottom: origin.top - screen.top + Math.max(...rects.map(r => r.bottom)),
+        };
+        setPicker(prev => prev && Object.keys(next).every(k => prev[k as keyof StoryPickerBounds] === next[k as keyof StoryPickerBounds]) ? prev : next);
+      } catch { /* The isolated player may still be loading. */ }
+    };
+    measure();
+    const timer = setInterval(measure, 150);
+    return () => clearInterval(timer);
+  }, [ad, index]);
   const [dx, setDx] = useState(0);
   const [anim, setAnim] = useState(false);
   const drag = useRef<{ x: number; moved: boolean } | null>(null);
@@ -83,13 +114,11 @@ export function StoryViewer({ index, onIndex, onClose }: { index: number; onInde
       {dx !== 0 && <div className="absolute inset-0" />}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-ig-bg/50 to-transparent" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-ig-bg/70 to-transparent" />
-      {/* Gesture layer: tap left half = previous, right half = next; drags anywhere run the cube swipe.
-          On Flicks a hole is left over the player's switcher column (moved centre-left via slot=reel). */}
-      {(ad ? [
-        "left-[92px] right-0 top-0 bottom-0",
-        "left-0 w-[92px] top-0 h-[calc(50%-115px)]",
-        "left-0 w-[92px] top-[calc(50%+115px)] bottom-0",
-      ] : ["inset-0"]).map((c) => <div key={c} aria-hidden className={`absolute ${c}`} onClick={tap} />)}
+      {/* The creative can be shorter than the screen: use its actual thumbnail bounds,
+          never screen-relative estimates that can intercept the first variant. */}
+      {ad ? storyGestureRegions(size.width, size.height, picker ?? { left: 0, top: 0, right: 100, bottom: size.height }).map((region, i) =>
+        <div key={i} aria-hidden className="absolute" style={region} onClick={tap} />)
+        : <div aria-hidden className="absolute inset-0" onClick={tap} />}
       <div className="pointer-events-none absolute inset-x-3 top-5 flex items-center gap-2">
         <Avatar src={story.avatar} logo={story.logo} monogram={story.monogram} size={32} />
         <div className="flex-1 leading-tight"><div className="flex items-center gap-1 text-[13.5px] font-semibold">{story.username}{ad && <Verified />}<span className="ml-1 font-normal text-ig-fg/70">{ad ? "" : "2h"}</span></div>{ad && <div className="text-[12px]">Sponsored</div>}</div>
