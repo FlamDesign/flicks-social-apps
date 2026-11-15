@@ -39,8 +39,8 @@ export function ExploreTab({ post, onPost }: { post: string | null; onPost: (id:
       {EXPLORE.map((t) => t.kind === "photo" ? <button key={t.id} aria-label="Open post" onClick={() => onPost(t.id)} className="block aspect-square w-full"><img src={t.image} alt="" loading="lazy" className="h-full w-full object-cover" /></button>
         : t.kind === "flick-live" ? <div key={t.id} data-placement={`explore-${t.id}`} className={`relative col-span-2 row-span-2 aspect-square ${t.side === "right" ? "col-start-2" : ""}`}>
           <FlickEmbed id={t.flick.flickId} aspect="1/1" fill />
-          {/* Upper area opens the post; the lower area stays with the Flick's own switcher. */}
-          <button aria-label={`Open ${t.flick.brand} post`} onClick={() => onPost(t.id)} className="absolute inset-x-0 top-0 h-[55%]" />
+          {/* Upper-left area opens the post; the right column (where a Flick's switcher can sit) stays with the Flick. */}
+          <button aria-label={`Open ${t.flick.brand} post`} onClick={() => onPost(t.id)} className="absolute left-0 top-0 h-[55%] w-[76%]" />
           <span className="pointer-events-none absolute left-2 top-2 rounded bg-ig-bg/60 px-1.5 py-0.5 text-[11px] font-medium">Sponsored</span>
         </div>
         : <button key={t.id} aria-label={`Open ${t.flick.brand} post`} onClick={() => onPost(t.id)} className="relative aspect-square w-full">
