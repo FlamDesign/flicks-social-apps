@@ -20,9 +20,11 @@ function CreateStoryCard() {
 function StoryCard({ story, onOpen }: { story: Story; onOpen: (s: Story) => void }) {
   return (
     <button onClick={() => onOpen(story)} className="relative h-[190px] w-[110px] shrink-0 overflow-hidden rounded-xl bg-fb-elev text-left">
-      {story.image
-        ? <img src={story.image} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
-        : <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-fb-blue/60 to-fb-blue text-[44px] font-bold text-fb-card">{story.monogram?.charAt(0)}</div>}
+      {story.video
+        ? <video src={story.video} poster={story.image} autoPlay muted loop playsInline className="absolute inset-0 h-full w-full object-cover" />
+        : story.image
+          ? <img src={story.image} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
+          : <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-fb-blue/60 to-fb-blue text-[44px] font-bold text-fb-card">{story.monogram?.charAt(0)}</div>}
       <div className="absolute inset-0 bg-gradient-to-t from-fb-video/50 via-transparent to-fb-video/30" />
       <span className="absolute left-2 top-2 rounded-full ring-2 ring-fb-blue"><Avatar src={story.avatar} logo={story.flick?.logo} monogram={story.monogram} size={32} /></span>
       <span className="absolute inset-x-2 bottom-2 text-[12px] font-semibold leading-4 text-fb-onvideo">

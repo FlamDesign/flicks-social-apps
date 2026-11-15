@@ -4,6 +4,10 @@ import knit3 from "@/assets/northpine-model-3.jpg";
 import thumb1 from "@/assets/northpine-product-1.jpg";
 import thumb2 from "@/assets/northpine-product-2.jpg";
 import thumb3 from "@/assets/northpine-product-3.jpg";
+import storyZaraVideo from "@/assets/videos/story-zara.mp4.asset.json";
+import storyRamVideo from "@/assets/videos/story-ram.mp4.asset.json";
+import storyGucciVideo from "@/assets/videos/story-gucci.mp4.asset.json";
+import storyGucciPoster from "@/assets/story-gucci-poster.jpg.asset.json";
 /**
  * FLICKS ON META — MEDIA CONFIG (single source of truth).
  * Swap a production Flick slot by changing its flickId.
@@ -133,11 +137,11 @@ export const GENERAL_MILLS_AD: Flick = {
 export const MARKETPLACE_FLICKS = [COACH_AD, SAMSUNG_AD, AVEENO_AD, MARKETPLACE_AD];
 
 /* ---------------- Stories row ---------------- */
-export type Story = { username: string; avatar: string; monogram?: string; sponsored?: boolean; image?: string; flick?: Flick };
+export type Story = { username: string; avatar: string; monogram?: string; sponsored?: boolean; image?: string; video?: string; flick?: Flick };
 export const STORIES: Story[] = [
-  { username: "Zara", avatar: "", monogram: "Zara", image: "/flick-thumbs/story-typxqe.jpg", sponsored: true, flick: STORY_AD },
-  { username: "Gucci", avatar: "", monogram: "Gucci", image: "/flick-thumbs/story-sfb39l.jpg", sponsored: true, flick: REELS_AD },
-  { username: "Ram Trucks", avatar: "", monogram: "Ram Trucks", image: "/flick-thumbs/story-cx5dwz.jpg", sponsored: true, flick: REELS_AD_2 },
+  { username: "Zara", avatar: "", monogram: "Zara", image: "/flick-thumbs/story-typxqe.jpg", video: storyZaraVideo.url, sponsored: true, flick: STORY_AD },
+  { username: "Gucci", avatar: "", monogram: "Gucci", image: storyGucciPoster.url, video: storyGucciVideo.url, sponsored: true, flick: REELS_AD },
+  { username: "Ram Trucks", avatar: "", monogram: "Ram Trucks", image: "/flick-thumbs/story-cx5dwz.jpg", video: storyRamVideo.url, sponsored: true, flick: REELS_AD_2 },
   { username: "Sam Wilde", avatar: AV(33), image: U("photo-1506744038136-46273834b3fb") },
 ];
 
