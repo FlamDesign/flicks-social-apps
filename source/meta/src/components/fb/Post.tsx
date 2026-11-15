@@ -103,7 +103,7 @@ export function OrganicPost({ post }: { post: Organic }) {
   );
 }
 
-function LinkBar({ flick, headline, priceLine, onPress }: { flick: Flick; headline?: string | undefined; priceLine?: string | undefined; onPress?: (() => void) | undefined }) {
+function LinkBar({ flick, headline, priceLine, option, onPress }: { flick: Flick; headline?: string | undefined; priceLine?: string | undefined; option?: { label: string; price?: string } | undefined; onPress?: (() => void) | undefined }) {
   return (
     <div className="flex items-center justify-between gap-3 bg-fb-bg px-3 py-2">
       <div className="min-w-0">
@@ -113,7 +113,7 @@ function LinkBar({ flick, headline, priceLine, onPress }: { flick: Flick; headli
       </div>
       {onPress
         ? <Button onClick={onPress} className="h-auto shrink-0 rounded-md bg-fb-elev px-4 py-2 text-[14px] font-semibold text-fb-fg hover:bg-fb-sep">{flick.cta}</Button>
-        : <FlickCta flick={flick} className="h-auto shrink-0 justify-center gap-1 rounded-md bg-fb-elev px-4 py-2 text-[14px] font-semibold text-fb-fg hover:bg-fb-sep aria-pressed:bg-fb-sep [&_svg]:size-3.5" />}
+        : <FlickCta flick={flick} option={option} className="h-auto shrink-0 justify-center gap-1 rounded-md bg-fb-elev px-4 py-2 text-[14px] font-semibold text-fb-fg hover:bg-fb-sep aria-pressed:bg-fb-sep [&_svg]:size-3.5" />}
     </div>
   );
 }
@@ -145,7 +145,7 @@ export function FlickAd({ flick, kind, enabled = true }: { flick: Flick; kind: A
       <FlickEmbed id={flick.flickId} aspect={flick.aspect} enabled={enabled} onEvent={onEvent} />
       {product && <div className="pointer-events-none absolute left-3 right-20" style={{ top: product.tagTop }}><Button key={change} variant="ghost" aria-label={`View ${product.productName}, ${option.price ?? ""}`} onClick={() => setSheet(true)} className="flick-row-pop product-tag pointer-events-auto relative h-auto max-w-full flex-col items-start gap-0.5 whitespace-normal rounded-md bg-fb-card/95 px-3 py-2 text-left text-fb-fg shadow-md hover:bg-fb-card"><span className="text-[11px] font-semibold leading-4">{product.productName}</span>{option.price && <span className="text-[12px]">{option.price}</span>}</Button></div>}
     </div>
-    <LinkBar flick={flick} headline={product ? product.productName : undefined} priceLine={product ? option.price : undefined} />
+    <LinkBar flick={flick} option={product ? option : undefined} headline={product ? product.productName : undefined} priceLine={product ? option.price : undefined} />
     <Reactions likes={l.likes} comments={flick.comments} />
     <ActionBar liked={l.liked} onLike={l.toggle} />
     {sheet && product && <ProductSheet flick={product} option={option} onClose={() => setSheet(false)} />}
@@ -158,7 +158,7 @@ function ProductSheet({ flick, option, onClose }: { flick: Flick; option: { labe
       <div className="mx-auto mt-2 h-1 w-10 rounded-full bg-fb-sep" />
       <div className="flex items-center justify-between px-4 py-3"><span className="text-[15px] font-semibold">{flick.displayName ?? flick.brand}</span><Button variant="ghost" size="icon" onClick={onClose} aria-label="Close" className="hover:bg-fb-elev"><Close size={20} /></Button></div>
       <div className="px-4"><div className="text-[15px] font-semibold">{flick.productName}</div>{option.price && <div className="mt-1 text-[14px]">{option.price}</div>}
-        <FlickCta flick={flick} className="mt-5 h-11 w-full bg-fb-blue text-fb-card hover:bg-fb-blue/90" />
+        <FlickCta flick={flick} option={option} className="mt-5 h-11 w-full bg-fb-blue text-fb-card hover:bg-fb-blue/90" />
       </div>
     </div>
   </div>;

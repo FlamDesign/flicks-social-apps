@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { usePrototypeBack, usePrototypeState } from "./PrototypeNavigation";
 import { CHATS, FEED, ME, STORIES, type Chat, type Flick, type FlickPlacement, type Story } from "@/data/feed";
 import { InAppBrowserProvider } from "./InAppBrowser";
@@ -66,10 +66,10 @@ export function FacebookApp() {
     destination: { placement: FlickPlacement; visit: number } | null;
   }>("screen", { tab: "home", story: null, messenger: false, listing: null, thread: null, destination: null });
   const { tab, story, messenger, listing, thread, destination } = view;
-  const setTab = (tab: Tab) => setView(v => ({ ...v, tab }));
+  const setTab = (tab: Tab) => setView(v => ({ ...v, tab, listing: null, story: null, thread: null, messenger: false, destination: null }));
   const setStory = (story: Story | null) => setView(v => ({ ...v, story }));
   const setMessenger = (messenger: boolean) => setView(v => ({ ...v, messenger }));
-  const setListing = (listing: Flick | null) => listing ? setView(v => ({ ...v, listing })) : back();
+  const setListing = (listing: Flick | null) => setView(v => ({ ...v, tab: "marketplace", listing }), listing === null);
   const setThread = (thread: Chat | null) => thread ? setView(v => ({ ...v, thread })) : back();
   const back = usePrototypeBack(() => setView(v => ({ ...v, story: null, listing: null, thread: null, messenger: false, tab: "home" })));
   const screen = useRef<HTMLDivElement>(null);
@@ -94,7 +94,7 @@ export function FacebookApp() {
     const timer = setTimeout(() => media.classList.remove("flick-arrival"), 1800);
     return () => clearTimeout(timer);
   }, [destination]);
-  const close = useCallback(() => back(), [back]);
+  const close = () => setView(v => ({ ...v, story: null }), true);
   const tabs: { id: Tab; label: string; icon: (a: boolean) => React.ReactNode }[] = [
     { id: "home", label: "Home", icon: (a) => <Home filled={a} size={26} /> },
     { id: "friends", label: "Friends", icon: (a) => <Friends filled={a} size={26} /> },
@@ -104,7 +104,7 @@ export function FacebookApp() {
     { id: "menu", label: "Menu", icon: () => <Menu size={26} /> },
   ];
   return (
-    <FlickProvider><InAppBrowserProvider><div ref={screen} className="relative flex h-full flex-col bg-fb-bg font-fb text-fb-fg antialiased" style={{ transform: "translateZ(0)" }}>
+    <FlickProvider><div ref={screen} className="relative flex h-full flex-col bg-fb-bg font-fb text-fb-fg antialiased" style={{ transform: "translateZ(0)" }}><InAppBrowserProvider>
       {tab !== "video" && <header className="shrink-0 bg-fb-card">
         <div className="flex h-[52px] items-center justify-between pl-4 pr-3">
           <span className="text-[26px] font-bold lowercase tracking-tight text-fb-blue">facebook</span>
@@ -132,6 +132,6 @@ export function FacebookApp() {
       {story && <StoryViewer key={story.username} story={story} onClose={close} onChange={setStory} />}
       {messenger && <Messenger thread={thread} setThread={setThread} onClose={back} />}
       <FlickFormats onSelect={navigateSection} />
-    </div></InAppBrowserProvider></FlickProvider>
+    </InAppBrowserProvider></div></FlickProvider>
   );
 }

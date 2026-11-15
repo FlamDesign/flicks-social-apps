@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { selectFlicks } from "./flick-policy";
+import { useRememberFlickVariant } from "./InAppBrowser";
 
 type Registration = { element: HTMLDivElement; priority: number };
 const FlickContext = createContext<{ active: string[]; register: (key: string, entry: Registration) => () => void } | null>(null);
@@ -46,6 +47,7 @@ export function FlickEmbed({ id, aspect, enabled = true, fill = false, priority 
   surface?: "reel" | "story";
 }) {
   const pool = useContext(FlickContext);
+  const rememberVariant = useRememberFlickVariant();
   const key = useId();
   const box = useRef<HTMLDivElement>(null);
   const frame = useRef<HTMLIFrameElement>(null);
@@ -71,11 +73,12 @@ export function FlickEmbed({ id, aspect, enabled = true, fill = false, priority 
       if (!data || data.source !== "flick" || data.id !== id) return;
       if (data.type === "vertex-ready") { ready = true; clearTimeout(timer); setState("ready"); }
       if (data.type === "vertex-error" && data.detail?.severity !== "warning") { clearTimeout(timer); setState("error"); }
+      if (data.type === "vertex-diff-change") rememberVariant(id, data.detail);
       eventCallback.current?.(data.type, data.detail);
     };
     window.addEventListener("message", receive);
     return () => { clearTimeout(timer); window.removeEventListener("message", receive); };
-  }, [mounted, id, attempt]);
+  }, [mounted, id, attempt, rememberVariant]);
   return <div ref={box} data-flick-id={id} data-flick-state={mounted ? state : "idle"} className={`relative w-full overflow-hidden bg-fb-elev ${fill ? "h-full" : ""}`} style={fill ? undefined : { aspectRatio: aspect }}>
     {mounted && <iframe key={attempt} ref={frame} src={"/flick-frame.html?id=" + id + (surface ? "&surface=" + surface : "")} allow="autoplay; fullscreen" title="Flick" className="absolute inset-0 h-full w-full border-0" />}
     {(!mounted || state === "loading") && <div aria-label="Loading Flick" className="pointer-events-none absolute inset-0 flick-shimmer" />}

@@ -7,6 +7,7 @@ import { FlickCta } from "./FlickCta";
 import { diffIdFromDetail, optionForDiff } from "./flick-policy";
 import { Button } from "@/components/ui/button";
 import { MockFlick } from "./MockFlick";
+import { useRememberFlickVariant } from "./InAppBrowser";
 
 function ListingCard({ listing }: { listing: Listing }) {
   return (
@@ -37,6 +38,7 @@ function SponsoredTile({ flick, onOpen }: { flick: Flick; onOpen: () => void }) 
 }
 
 function ListingDetail({ flick, onBack }: { flick: Flick; onBack: () => void }) {
+  const rememberVariant = useRememberFlickVariant();
   const [option, setOption] = useState<{ label: string; price?: string }>(flick.skuByDiff?.["0"] ?? { label: "" });
   const [change, setChange] = useState(0);
   const [saved, setSaved] = useState(false);
@@ -57,14 +59,14 @@ function ListingDetail({ flick, onBack }: { flick: Flick; onBack: () => void }) 
         <Button variant="ghost" size="icon" aria-label="Back" onClick={onBack} className="hover:bg-fb-elev"><Back size={24} /></Button>
         <span className="text-[17px] font-semibold">Listing</span>
       </header>
-      {flick.mock ? <MockFlick flick={flick} onChange={id => { setOption(flick.skuByDiff?.[id] ?? { label: "" }); setChange(n => n + 1); }} /> : <FlickEmbed id={flick.flickId} aspect={flick.aspect} priority={8} onEvent={onEvent} />}
+      {flick.mock ? <MockFlick flick={flick} onChange={id => { rememberVariant(flick.flickId, { diff: id }); setOption(flick.skuByDiff?.[id] ?? { label: "" }); setChange(n => n + 1); }} /> : <FlickEmbed id={flick.flickId} aspect={flick.aspect} priority={8} onEvent={onEvent} />}
       <div className="space-y-1 px-3 pt-3">
         <div className="text-[17px] font-semibold">{flick.productName}</div>
         <div key={change} className="flick-row-pop text-[17px] font-bold">{option.price}</div>
         <div className="flex items-center gap-1 text-[13px] text-fb-muted">Sponsored · {flick.displayName} </div>
       </div>
       <div className="px-3 pt-3">
-        <FlickCta flick={flick} className="flex h-10 w-full justify-center gap-1 rounded-lg bg-fb-blue text-[15px] font-semibold text-fb-card hover:bg-fb-blue/90 aria-pressed:bg-fb-blue/70" />
+        <FlickCta flick={flick} option={option} className="flex h-10 w-full justify-center gap-1 rounded-lg bg-fb-blue text-[15px] font-semibold text-fb-card hover:bg-fb-blue/90 aria-pressed:bg-fb-blue/70" />
       </div>
       <div className="flex gap-2 px-3 py-3">
         <button className={rowBtn}><Comment size={18} />Message</button>

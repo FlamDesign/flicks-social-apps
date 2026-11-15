@@ -18,6 +18,7 @@ export type Flick = {
   displayName?: string;
   location?: string;
   landingUrl?: string;
+  landingVariants?: { image: string; diff: string }[];
   landingSheet?: { address: string; copy: string; button: string };
   embeddable?: boolean;
   embedCheck?: string;
@@ -46,26 +47,26 @@ export const ME = { name: "Alex Morgan", avatar: AV(12) };
 
 /* ---------------- The eight production Flicks ---------------- */
 export const STORY_AD: Flick = {
-  id: "story-zara", flickId: "typxqe", aspect: "9/16", brand: "zara", displayName: "Zara", logo: "/logos/zara.webp",
+  id: "story-zara", flickId: "typxqe", landingVariants: [{"image": "/landing-previews/typxqe-0.jpg", "diff": "0"}, {"image": "/landing-previews/typxqe-1.jpg", "diff": "1"}, {"image": "/landing-previews/typxqe-2.jpg", "diff": "2"}], aspect: "9/16", brand: "zara", displayName: "Zara", logo: "/logos/zara.webp",
   landingUrl: "https://www.zara.com/us/", embeddable: false, embedCheck: "HTTP 403", cta: "Shop now", caption: "A moment with Zara.",
   likes: 0, comments: 0, 
 };
 
 export const FEED_AD: Flick = {
-  id: "feed-cayman", flickId: "cayman", aspect: "1/1", brand: "cayman", displayName: "Cayman Islands", logo: "/logos/cayman.webp",
+  id: "feed-cayman", flickId: "cayman", landingVariants: [{"image": "/landing-previews/cayman-0.jpg", "diff": "0"}, {"image": "/landing-previews/cayman-1.jpg", "diff": "1"}, {"image": "/landing-previews/cayman-2.jpg", "diff": "2"}], aspect: "1/1", brand: "cayman", displayName: "Cayman Islands", logo: "/logos/cayman.webp",
   landingUrl: "https://www.visitcaymanislands.com/", embeddable: false, embedCheck: "HTTP 403; embedding unverified", linkDomain: "visitcaymanislands.com", linkHeadline: "Cayman Islands",
   cta: "Book Now", caption: "A moment in the Cayman Islands.", likes: 18422, comments: 312,
 };
 
 export const CREATOR_AD: Flick & { creator: string; creatorAvatar: string } = {
-  id: "creator-newera", flickId: "gwhttp", aspect: "1/1", brand: "neweracap", displayName: "New Era Cap", logo: "/logos/neweracap.webp",
+  id: "creator-newera", flickId: "gwhttp", landingVariants: [{"image": "/landing-previews/gwhttp-0.jpg", "diff": "0"}, {"image": "/landing-previews/gwhttp-1.jpg", "diff": "1"}, {"image": "/landing-previews/gwhttp-2.jpg", "diff": "2"}, {"image": "/landing-previews/gwhttp-3.jpg", "diff": "3"}], aspect: "1/1", brand: "neweracap", displayName: "New Era Cap", logo: "/logos/neweracap.webp",
   creator: "Jess Carter", creatorAvatar: AV(47),
   landingUrl: "https://www.neweracap.com/collections/mlb-headwear", embeddable: false, embedCheck: "HTTP 200; X-Frame-Options", linkDomain: "neweracap.com", linkHeadline: "MLB Headwear",
   cta: "Shop now", caption: "From New Era Cap.", likes: 42910, comments: 1204,
 };
 
 export const SHOPPING_AD: Flick & { productName: string; skuByDiff: Record<string, { label: string; price?: string }> } = {
-  id: "shopping-ua", flickId: "vq0vp6", aspect: "1/1", brand: "underarmour", displayName: "Under Armour", logo: "/logos/underarmour.webp",
+  id: "shopping-ua", flickId: "vq0vp6", landingVariants: [{"image": "/landing-previews/vq0vp6-0.jpg", "diff": "0"}, {"image": "/landing-previews/vq0vp6-1.jpg", "diff": "1"}, {"image": "/landing-previews/vq0vp6-2.jpg", "diff": "2"}], aspect: "1/1", brand: "underarmour", displayName: "Under Armour", logo: "/logos/underarmour.webp",
   landingUrl: "https://www.underarmour.com/en-us/p/heatgear_elite_womens_crop_mock_short_sleeve/6014710.html?dwvar_6014710_color=008", embeddable: true, embedCheck: "HTTP 200",
   linkDomain: "underarmour.com",
   cta: "Shop now", caption: "In focus: Under Armour.", likes: 9876, comments: 188,
@@ -74,7 +75,7 @@ export const SHOPPING_AD: Flick & { productName: string; skuByDiff: Record<strin
 };
 
 export const PAGE_AD: Flick = {
-  id: "page-rogers", flickId: "s87ukl", aspect: "1/1", brand: "rogersfc",
+  id: "page-rogers", flickId: "s87ukl", landingVariants: [{"image": "/landing-previews/s87ukl-0.jpg", "diff": "0"}, {"image": "/landing-previews/s87ukl-1.jpg", "diff": "1"}, {"image": "/landing-previews/s87ukl-2.jpg", "diff": "2"}], aspect: "1/1", brand: "rogersfc",
   displayName: "Rogers Football Club", logo: "/logos/rogersfc.webp", location: "Rogers FC Training Center",
   landingSheet: { address: "rogersfc.com", copy: "Train with the first team. Open sessions every Saturday.", button: "Book a session" },
   linkDomain: "rogersfc.com", linkHeadline: "Train with the first team",
@@ -82,19 +83,19 @@ export const PAGE_AD: Flick = {
 };
 
 export const REELS_AD: Flick = {
-  id: "reels-gucci", flickId: "sfb39l", aspect: "9/16", brand: "gucci", displayName: "Gucci", logo: "/logos/gucci.webp",
+  id: "reels-gucci", flickId: "sfb39l", landingVariants: [{"image": "/landing-previews/sfb39l-0.jpg", "diff": "0"}, {"image": "/landing-previews/sfb39l-1.jpg", "diff": "2"}, {"image": "/landing-previews/sfb39l-2.jpg", "diff": "1"}], aspect: "9/16", brand: "gucci", displayName: "Gucci", logo: "/logos/gucci.webp",
   landingUrl: "https://www.gucci.com/us/en/ca/women/ready-to-wear-for-women/dresses-and-jumpsuits-for-women-c-women-readytowear-dresses", embeddable: false, embedCheck: "Header check timed out; embedding unverified",
   cta: "Shop now", caption: "A look at Gucci.", likes: 128400, comments: 2301,
 };
 
 export const REELS_AD_2: Flick = {
-  id: "reels-ram", flickId: "cx5dwz", aspect: "9/16", brand: "ramtrucks", displayName: "Ram Trucks", logo: "/logos/ramtrucks.webp",
+  id: "reels-ram", flickId: "cx5dwz", landingVariants: [{"image": "/landing-previews/cx5dwz-0.jpg", "diff": "0"}, {"image": "/landing-previews/cx5dwz-1.jpg", "diff": "1"}, {"image": "/landing-previews/cx5dwz-2.jpg", "diff": "2"}], aspect: "9/16", brand: "ramtrucks", displayName: "Ram Trucks", logo: "/logos/ramtrucks.webp",
   landingUrl: "https://www.ramtrucks.com/", embeddable: false, embedCheck: "HTTP 403",
   cta: "Explore", caption: "Discover Ram Trucks.", likes: 28400, comments: 309,
 };
 
 export const MARKETPLACE_AD: Flick & { productName: string; skuByDiff: Record<string, { label: string; price?: string }> } = {
-  id: "marketplace-ulta", flickId: "tzed9x", aspect: "1/1", brand: "ultabeauty", displayName: "Ulta Beauty", logo: "/logos/ultabeauty.webp",
+  id: "marketplace-ulta", flickId: "tzed9x", landingVariants: [{"image": "/landing-previews/tzed9x-0.jpg", "diff": "0"}, {"image": "/landing-previews/tzed9x-1.jpg", "diff": "1"}, {"image": "/landing-previews/tzed9x-2.jpg", "diff": "2"}], aspect: "1/1", brand: "ultabeauty", displayName: "Ulta Beauty", logo: "/logos/ultabeauty.webp",
   landingUrl: "https://www.ulta.com/p/macximal-silky-matte-lipstick-pimprod2043558?sku=2644466", embeddable: true, embedCheck: "HTTP 200",
   cta: "Shop now", caption: "From Ulta Beauty.", likes: 6421, comments: 94,
   productName: "MACximal Silky Matte Lipstick",
@@ -104,27 +105,27 @@ export const MARKETPLACE_AD: Flick & { productName: string; skuByDiff: Record<st
 
 // Invented demo prices, not live storefront prices. No variant names are inferred.
 export const COACH_AD = {
-  id: "shopping-coach", flickId: "d81eio", aspect: "1/1", brand: "coach", displayName: "Coach", logo: "/logos/coach.webp",
+  id: "shopping-coach", flickId: "d81eio", landingVariants: [{"image": "/landing-previews/d81eio-0.jpg", "diff": "0"}, {"image": "/landing-previews/d81eio-1.jpg", "diff": "1"}, {"image": "/landing-previews/d81eio-2.jpg", "diff": "2"}], aspect: "1/1", brand: "coach", displayName: "Coach", logo: "/logos/coach.webp",
   productName: "Tabby Shoulder Bag 26", thumbnail: "/flick-thumbs/d81eio.jpg", tagTop: "20%",
   landingUrl: "https://www.coach.com/products/tabby-shoulder-bag-26/CCX04-B4POP.html", embeddable: false, embedCheck: "HTTP 403; X-Frame-Options", linkDomain: "coach.com",
   cta: "Shop now", caption: "Coach, in the spotlight.", likes: 4821, comments: 83,
   skuByDiff: { "0": { label: "Tabby Shoulder Bag 26", price: "$450.00" }, "1": { label: "Tabby Shoulder Bag 26", price: "$475.00" }, "2": { label: "Tabby Shoulder Bag 26", price: "$495.00" } },
 } satisfies Flick;
 export const SAMSUNG_AD = {
-  id: "shopping-samsung", flickId: "yux3w1", aspect: "1/1", brand: "samsung", displayName: "Samsung", logo: "/logos/samsung.webp",
+  id: "shopping-samsung", flickId: "yux3w1", landingVariants: [{"image": "/landing-previews/yux3w1-0.jpg", "diff": "0"}, {"image": "/landing-previews/yux3w1-1.jpg", "diff": "1"}, {"image": "/landing-previews/yux3w1-2.jpg", "diff": "2"}], aspect: "1/1", brand: "samsung", displayName: "Samsung", logo: "/logos/samsung.webp",
   productName: "Galaxy S26 512GB Unlocked", thumbnail: "/flick-thumbs/yux3w1.jpg", tagTop: "20%",
   landingUrl: "https://www.samsung.com/us/smartphones/galaxy-s26/buy/galaxy-s26-512gb-unlocked-sku-sm-s942uzdfxaa/", embeddable: true, embedCheck: "HTTP 200", linkDomain: "samsung.com",
   cta: "Shop now", caption: "A closer look at Samsung.", likes: 8120, comments: 144,
   skuByDiff: { "0": { label: "Galaxy S26 512GB Unlocked", price: "$999.99" }, "1": { label: "Galaxy S26 512GB Unlocked", price: "$1,099.99" }, "2": { label: "Galaxy S26 512GB Unlocked", price: "$1,199.99" } },
 } satisfies Flick;
 export const AVEENO_AD = {
-  id: "marketplace-aveeno", flickId: "um792g", aspect: "1/1", brand: "aveeno", displayName: "Aveeno", logo: "/logos/aveeno.webp",
+  id: "marketplace-aveeno", flickId: "um792g", landingVariants: [{"image": "/landing-previews/um792g-0.jpg", "diff": "0"}, {"image": "/landing-previews/um792g-1.jpg", "diff": "1"}, {"image": "/landing-previews/um792g-2.jpg", "diff": "2"}], aspect: "1/1", brand: "aveeno", displayName: "Aveeno", logo: "/logos/aveeno.webp",
   productName: "Aveeno", thumbnail: "/flick-thumbs/um792g.jpg", landingUrl: "https://www.aveeno.com/", embeddable: false, embedCheck: "HTTP 403",
   cta: "Shop now", caption: "A moment for Aveeno.", likes: 2240, comments: 42,
   skuByDiff: { "0": { label: "Aveeno", price: "$12.99" }, "1": { label: "Aveeno", price: "$14.99" }, "2": { label: "Aveeno", price: "$16.99" } },
 } satisfies Flick;
 export const GENERAL_MILLS_AD: Flick = {
-  id: "feed-generalmills", flickId: "ccheju", aspect: "1/1", brand: "generalmills", displayName: "General Mills", logo: "/logos/generalmills.webp",
+  id: "feed-generalmills", flickId: "ccheju", landingVariants: [{"image": "/landing-previews/ccheju-0.jpg", "diff": "0"}, {"image": "/landing-previews/ccheju-1.jpg", "diff": "1"}, {"image": "/landing-previews/ccheju-2.jpg", "diff": "2"}], aspect: "1/1", brand: "generalmills", displayName: "General Mills", logo: "/logos/generalmills.webp",
   landingUrl: "https://www.generalmills.com/our-food/where-to-buy", embeddable: false, embedCheck: "HTTP 200; CSP frame-ancestors", linkDomain: "generalmills.com", linkHeadline: "Find it near you",
   cta: "Learn more", caption: "From the General Mills family.", likes: 3140, comments: 61,
 };
