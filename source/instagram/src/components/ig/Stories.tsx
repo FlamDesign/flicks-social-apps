@@ -40,7 +40,7 @@ function Face({ story }: { story: Story }) {
 }
 
 /** Full-screen story. Sponsored stories are Flicks with our single CTA pill; tap the edges or swipe left/right
- *  (3D cube) to move between stories. Tap zones stay in the upper part on Flicks so the player's switcher keeps its taps. */
+ *  (3D cube) to move between stories. A full-screen gesture layer handles both; on Flicks it leaves a hole over the switcher column. */
 export function StoryViewer({ index, onIndex, onClose }: { index: number; onIndex: (i: number) => void; onClose: () => void }) {
   const story = STORIES[index] as Story;
   const ad = story.flick ?? null;
@@ -67,26 +67,29 @@ export function StoryViewer({ index, onIndex, onClose }: { index: number; onInde
     setDx(-dir * w());
     setTimeout(() => { setAnim(false); setDx(0); step(dir); }, 260);
   };
+  const tap = (e: React.MouseEvent) => { const r = root.current?.getBoundingClientRect(); if (!r) return; step(e.clientX - r.left < r.width / 2 ? -1 : 1); };
   const W = w();
   const a = (dx / W) * 90;
   const nb = dx < 0 ? STORIES[index + 1] : dx > 0 ? STORIES[index - 1] : undefined;
   const tr = anim ? "transform 260ms ease-out" : "none";
-  const zone = ad ? "top-[72px] h-[32%] w-[28%]" : "top-[72px] bottom-20 w-1/2";
-  return <div ref={root} data-placement={ad ? `story-${index}` : undefined} className="fixed inset-0 z-50 select-none overflow-hidden bg-ig-bg" style={{ perspective: 1200, touchAction: "pan-y" }}
+  return <div ref={root} data-placement={ad ? `story-${index}` : undefined} className="fixed inset-0 z-50 select-none overflow-hidden bg-ig-bg" style={{ perspective: 1200, touchAction: "none" }}
     onPointerDown={(e) => { if (!anim) drag.current = { x: e.clientX, moved: false }; }}
     onPointerMove={(e) => { const d = drag.current; if (!d) return; const m = e.clientX - d.x; if (!d.moved && Math.abs(m) < 8) return; if (!d.moved) { d.moved = true; e.currentTarget.setPointerCapture(e.pointerId); } setDx(index === 0 && m > 0 ? m * 0.25 : m); }}
     onPointerUp={release} onPointerCancel={release}
     onClickCapture={(e) => { if (swallow.current) { e.stopPropagation(); e.preventDefault(); } }}>
     {nb && <div className="absolute inset-0" style={{ transformOrigin: dx < 0 ? "0% 50%" : "100% 50%", transform: `translateX(${dx < 0 ? W + dx : dx - W}px) rotateY(${dx < 0 ? a + 90 : a - 90}deg)`, transition: tr, backfaceVisibility: "hidden" }}><Face story={nb} /></div>}
     <div className="absolute inset-0 overflow-hidden" style={{ transformOrigin: dx < 0 ? "100% 50%" : "0% 50%", transform: dx ? `translateX(${dx}px) rotateY(${a}deg)` : undefined, transition: tr, backfaceVisibility: "hidden" }}>
-      {ad ? <FlickEmbed key={index} id={ad.flickId} aspect={ad.aspect} fill priority={10} /> : <img src={story.image} alt="" className="h-full w-full object-cover" />}
+      {ad ? <FlickEmbed key={index} id={ad.flickId} aspect={ad.aspect} fill priority={10} slot="reel" /> : <img src={story.image} alt="" className="h-full w-full object-cover" />}
       {dx !== 0 && <div className="absolute inset-0" />}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-ig-bg/50 to-transparent" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-ig-bg/70 to-transparent" />
-      <button aria-label="Previous story" onClick={() => step(-1)} className={`absolute left-0 ${zone}`} />
-      <button aria-label="Next story" onClick={() => step(1)} className={`absolute right-0 ${zone}`} />
-      {/* Thin swipe strips along both edges so a drag works even over a Flick. */}
-      <div aria-hidden className="absolute bottom-24 left-0 top-[72px] w-6" /><div aria-hidden className="absolute bottom-24 right-0 top-[72px] w-6" />
+      {/* Gesture layer: tap left half = previous, right half = next; drags anywhere run the cube swipe.
+          On Flicks a hole is left over the player's switcher column (moved centre-left via slot=reel). */}
+      {(ad ? [
+        "left-[92px] right-0 top-0 bottom-0",
+        "left-0 w-[92px] top-0 h-[calc(50%-115px)]",
+        "left-0 w-[92px] top-[calc(50%+115px)] bottom-0",
+      ] : ["inset-0"]).map((c) => <div key={c} aria-hidden className={`absolute ${c}`} onClick={tap} />)}
       <div className="pointer-events-none absolute inset-x-3 top-5 flex items-center gap-2">
         <Avatar src={story.avatar} logo={story.logo} monogram={story.monogram} size={32} />
         <div className="flex-1 leading-tight"><div className="flex items-center gap-1 text-[13.5px] font-semibold">{story.username}{ad && <Verified />}<span className="ml-1 font-normal text-ig-fg/70">{ad ? "" : "2h"}</span></div>{ad && <div className="text-[12px]">Sponsored</div>}</div>
