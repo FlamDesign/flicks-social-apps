@@ -1,6 +1,7 @@
 import { useRef, useState, type ReactNode } from "react";
 import { fmt, type Flick, type Organic, CREATOR_AD } from "@/data/feed";
 import { Button } from "@/components/ui/button";
+import { FlickAudioBlock } from "./FlickAudio";
 import { FlickEmbed } from "./FlickEmbed";
 import { FlickCta } from "./FlickCta";
 import { diffIdFromDetail, optionForDiff } from "./flick-policy";
@@ -153,7 +154,7 @@ export function FlickAd({ flick, kind, enabled = true }: { flick: Flick; kind: A
 }
 
 function ProductSheet({ flick, option, onClose }: { flick: Flick; option: { label: string; price?: string }; onClose: () => void }) {
-  return <div className="fixed inset-0 z-50 flex items-end bg-fb-video/60" onClick={onClose}>
+  return <FlickAudioBlock><div className="fixed inset-0 z-50 flex items-end bg-fb-video/60" onClick={onClose}>
     <div onClick={(e) => e.stopPropagation()} role="dialog" aria-label="View product" className="animate-fb-sheet w-full rounded-t-2xl bg-fb-card pb-8">
       <div className="mx-auto mt-2 h-1 w-10 rounded-full bg-fb-sep" />
       <div className="flex items-center justify-between px-4 py-3"><span className="text-[15px] font-semibold">{flick.displayName ?? flick.brand}</span><Button variant="ghost" size="icon" onClick={onClose} aria-label="Close" className="hover:bg-fb-elev"><Close size={20} /></Button></div>
@@ -161,5 +162,5 @@ function ProductSheet({ flick, option, onClose }: { flick: Flick; option: { labe
         <FlickCta flick={flick} option={option} className="mt-5 h-11 w-full bg-fb-blue text-fb-card hover:bg-fb-blue/90" />
       </div>
     </div>
-  </div>;
+  </div></FlickAudioBlock>;
 }

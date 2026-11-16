@@ -4,6 +4,11 @@ export function selectFlicks(candidates: FlickCandidate[]) {
     .sort((a, b) => b.priority - a.priority || a.distance - b.distance)
     .slice(0, 2).map((c) => c.key);
 }
+export function selectAudibleFlick(candidates: { key: string; visibility: number; priority: number }[], hidden = false): string | null {
+  if (hidden) return null;
+  return candidates.filter(c => c.visibility >= 0.5)
+    .sort((a, b) => b.visibility - a.visibility || b.priority - a.priority)[0]?.key ?? null;
+}
 export function diffIdFromDetail(detail: unknown): string | null {
   if (!detail || typeof detail !== "object") return null;
   const d = detail as Record<string, unknown>;

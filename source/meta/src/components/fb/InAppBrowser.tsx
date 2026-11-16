@@ -7,6 +7,8 @@ import { Avatar } from "./Avatar";
 import { diffIdFromDetail } from "./flick-policy";
 import { usePrototypeBack, usePrototypeState } from "./PrototypeNavigation";
 
+import { FlickAudioBlock } from "./FlickAudio";
+
 type ProductOption = { label: string; price?: string };
 type Destination = { flick: Flick; diff: string; option?: ProductOption | undefined };
 const BrowserContext = createContext<(flick: Flick, option?: ProductOption) => void>(() => {});
@@ -37,7 +39,7 @@ export function InAppBrowserProvider({ children }: { children: ReactNode }) {
   const selected = images.find(variant => variant.diff === diff) ?? images[0];
   const option = destination?.option ?? flick?.skuByDiff?.[diff] ?? flick?.skuByDiff?.["0"];
   const title = option?.label || flick?.productName || flick?.linkHeadline || flick?.displayName || flick?.brand;
-  return <VariantContext.Provider value={remember}><BrowserContext.Provider value={open}>{children}{flick && <div role="dialog" aria-modal="true" aria-label="In-app browser" className="animate-fb-sheet fixed inset-0 z-[90] flex flex-col bg-fb-card text-fb-fg" onKeyDown={e => { if (e.key === "Escape") close(); }}>
+  return <VariantContext.Provider value={remember}><BrowserContext.Provider value={open}><FlickAudioBlock blocked={!!flick} />{children}{flick && <div role="dialog" aria-modal="true" aria-label="In-app browser" className="animate-fb-sheet fixed inset-0 z-[90] flex flex-col bg-fb-card text-fb-fg" onKeyDown={e => { if (e.key === "Escape") close(); }}>
     <header className="flex h-14 shrink-0 items-center gap-2 border-b border-fb-sep bg-fb-bg px-2">
       <Button variant="ghost" size="icon" aria-label="Close browser" onClick={close}><Close size={23} /></Button>
       <LockKeyhole size={14} className="text-fb-muted" /><span className="min-w-0 flex-1 truncate text-[14px] font-semibold">{flick.landingSheet?.address ?? (landingUrl ? new URL(landingUrl).hostname : flick.brand)}</span>
