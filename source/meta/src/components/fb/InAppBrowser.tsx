@@ -30,6 +30,9 @@ export function InAppBrowserProvider({ children }: { children: ReactNode }) {
   };
   const flick = destination?.flick;
   const diff = destination?.diff ?? "0";
+  const variant = flick?.variants?.[diff];
+  const snapshot = variant?.snapshot ?? flick?.snapshot;
+  const landingUrl = variant?.url ?? flick?.landingUrl;
   const images = flick?.landingVariants ?? flick?.mockVariants?.map((variant, i) => ({ image: variant.image, diff: String(i) })) ?? [];
   const selected = images.find(variant => variant.diff === diff) ?? images[0];
   const option = destination?.option ?? flick?.skuByDiff?.[diff] ?? flick?.skuByDiff?.["0"];
@@ -37,13 +40,13 @@ export function InAppBrowserProvider({ children }: { children: ReactNode }) {
   return <VariantContext.Provider value={remember}><BrowserContext.Provider value={open}>{children}{flick && <div role="dialog" aria-modal="true" aria-label="In-app browser" className="animate-fb-sheet fixed inset-0 z-[90] flex flex-col bg-fb-card text-fb-fg" onKeyDown={e => { if (e.key === "Escape") close(); }}>
     <header className="flex h-14 shrink-0 items-center gap-2 border-b border-fb-sep bg-fb-bg px-2">
       <Button variant="ghost" size="icon" aria-label="Close browser" onClick={close}><Close size={23} /></Button>
-      <LockKeyhole size={14} className="text-fb-muted" /><span className="min-w-0 flex-1 truncate text-[14px] font-semibold">{flick.landingSheet?.address ?? (flick.landingUrl ? new URL(flick.landingUrl).hostname : flick.brand)}</span>
+      <LockKeyhole size={14} className="text-fb-muted" /><span className="min-w-0 flex-1 truncate text-[14px] font-semibold">{flick.landingSheet?.address ?? (landingUrl ? new URL(landingUrl).hostname : flick.brand)}</span>
       <Button variant="ghost" size="icon" aria-label="Browser menu" onClick={() => setMenu(v => !v)}><More size={22} /></Button>
     </header>
     <div className="h-0.5 shrink-0 bg-fb-blue" />
-    {menu && <div className="absolute right-2 top-14 z-10 rounded-lg border border-fb-sep bg-fb-card p-2 shadow-md">{flick.landingUrl ? <Button asChild variant="ghost"><a href={flick.landingUrl} target="_blank" rel="noopener noreferrer">Open in browser</a></Button> : <span className="px-2 text-[13px] text-fb-muted">Demo page</span>}</div>}
+    {menu && <div className="absolute right-2 top-14 z-10 rounded-lg border border-fb-sep bg-fb-card p-2 shadow-md">{landingUrl ? <Button asChild variant="ghost"><a href={landingUrl} target="_blank" rel="noopener noreferrer">Open in browser</a></Button> : <span className="px-2 text-[13px] text-fb-muted">Demo page</span>}</div>}
     <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-      {flick.snapshot ? <img src={flick.snapshot} alt={`${flick.displayName ?? flick.brand} website`} className="block w-full" /> : <>
+      {snapshot ? <img src={snapshot} alt={`${flick.displayName ?? flick.brand} website`} className="block w-full" /> : <>
       <div className="flex items-center gap-3 px-4 py-4"><Avatar logo={flick.logo} monogram={flick.displayName ?? flick.brand} size={40} /><div className="min-w-0"><h1 className="text-[18px] font-semibold">{flick.displayName ?? flick.brand}</h1><p className="text-[12px] text-fb-muted">{flick.mock || flick.landingSheet ? "Demo collection" : "Flick preview"}</p></div></div>
       {selected && <img key={selected.image} src={selected.image} alt={`${title} — selected Flick variant`} className="max-h-[52dvh] w-full object-contain bg-fb-elev" />}
       <div className="px-4 py-5">
