@@ -24,6 +24,9 @@ export type Flick = {
   embeddable?: boolean;
   /** Phone-width capture of the real landing page (public/landing/), shown scrollable in the in-app browser. */
   snapshot?: string;
+  /** Per-variant landing pages keyed by the player's diff id (observed by tapping each thumbnail).
+   * Variants without an entry fall back to landingUrl/snapshot. */
+  variants?: Record<string, LandingVariant>;
   productName?: string;
   tagTop?: string;
   skuByDiff?: Record<string, { label: string; price?: string }>;
@@ -32,13 +35,22 @@ export type Flick = {
   likes: number;
   comments: number;
 };
+/** position = thumbnail position in the Flick's own switcher (1-based); snapshot = public/landing/<flickId>-<position>.jpg. */
+export type LandingVariant = { position: number; url: string; snapshot: string };
+const variants = (flickId: string, rows: [position: number, diff: string, url: string][]) =>
+  Object.fromEntries(rows.map(([position, diff, url]) => [diff, { position, url, snapshot: `/landing/${flickId}-${position}.jpg` }]));
 const M = (id: number) => `https://assets.mixkit.co/videos/${id}/${id}-720.mp4`;
 const U = (id: string, w = 1080) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&q=80`;
 const AV = (n: number) => `https://i.pravatar.cc/150?img=${n}`;
 export const ME = { username: "alex.morgan", avatar: AV(12) };
 
 export const STORY_AD: Flick = {
-  id: "story-fashion", flickId: "typxqe", aspect: "9/16", brand: "zara", logo: "/logos/zara.webp", brandName: "Zara",
+  id: "story-fashion", flickId: "typxqe",
+  variants: variants("typxqe", [
+    [1, "0", "https://www.zara.com/us/en/polka-dot-bomber-jacket-p08372236.html?v1=594401057&v2=2417772"],
+    [2, "1", "https://www.zara.com/us/en/checked-bomber-jacket-p06318268.html?v1=590685516"],
+    [3, "2", "https://www.zara.com/us/en/houndstooth-print-jacket-p05854708.html"],
+  ]), aspect: "9/16", brand: "zara", logo: "/logos/zara.webp", brandName: "Zara",
   landingUrl: "https://www.zara.com/us/", snapshot: "/landing/zara.jpg", cta: "Shop now", caption: "New season, new favorites.", embeddable: false,
   likes: 0, comments: 0,
 };
@@ -51,14 +63,22 @@ export const FEED_AD: Flick = {
 };
 
 export const CREATOR_AD: Flick & { creator: string; creatorAvatar: string } = {
-  id: "creator-collab", flickId: "gwhttp", aspect: "1/1", brand: "neweracap", logo: "/logos/neweracap.webp", brandName: "New Era",
+  id: "creator-collab", flickId: "gwhttp",
+  variants: variants("gwhttp", [
+    [3, "2", "https://www.topperzstore.com/new-era-los-angeles-dodgers-olive-edition-9forty-a-frame-trucker-snapback-hat"],
+  ]), aspect: "1/1", brand: "neweracap", logo: "/logos/neweracap.webp", brandName: "New Era",
   landingUrl: "https://www.neweracap.com/collections/mlb-headwear", snapshot: "/landing/neweracap.jpg", cta: "Shop now", caption: "Game day, every day.", embeddable: false,
   likes: 42910, comments: 1204,
   creator: "jess.on.the.go", creatorAvatar: AV(47),
 };
 
 export const SHOPPING_AD: Flick & { productName: string; skuByDiff: Record<string, { label: string; price?: string }> } = {
-  id: "shopping", flickId: "vq0vp6", aspect: "1/1", brand: "underarmour", logo: "/logos/underarmour.webp", brandName: "Under Armour",
+  id: "shopping", flickId: "vq0vp6",
+  variants: variants("vq0vp6", [
+    [1, "0", "https://www.underarmour.com/en-us/p/heatgear_elite_womens_crop_mock_short_sleeve/6014710.html?dwvar_6014710_color=008&utm_source=flam&utm_medium=flicks&utm_campaign=ua_dawn_repeats&utm_content=black_008"],
+    [2, "1", "https://www.underarmour.com/en-us/p/heatgear_elite_womens_crop_mock_short_sleeve/6014710.html?dwvar_6014710_color=600&utm_source=flam&utm_medium=flicks&utm_campaign=ua_dawn_repeats&utm_content=pink_600"],
+    [3, "2", "https://www.underarmour.com/en-us/p/heatgear_elite_womens_crop_mock_short_sleeve/6014710.html?dwvar_6014710_color=394&utm_source=flam&utm_medium=flicks&utm_campaign=ua_dawn_repeats&utm_content=lime_394"],
+  ]), aspect: "1/1", brand: "underarmour", logo: "/logos/underarmour.webp", brandName: "Under Armour",
   landingUrl: "https://www.underarmour.com/en-us/p/heatgear_elite_womens_crop_mock_short_sleeve/6014710.html?dwvar_6014710_color=008", snapshot: "/landing/underarmour.jpg", cta: "Shop now", caption: "Built for the work.", embeddable: false,
   likes: 9876, comments: 188,
   productName: "HeatGear Elite Crop Mock", tagTop: "20%",
@@ -66,13 +86,21 @@ export const SHOPPING_AD: Flick & { productName: string; skuByDiff: Record<strin
 };
 
 export const REELS_AD: Flick = {
-  id: "reels-auto", flickId: "sfb39l", aspect: "9/16", brand: "gucci", logo: "/logos/gucci.webp", brandName: "Gucci",
+  id: "reels-auto", flickId: "sfb39l",
+  variants: variants("sfb39l", [
+    [2, "2", "https://www.zapakasa.com/products/plum-velvet-peak-lapel-2-piece-prom-suits-with-pockets?variant=45628234268862"],
+  ]), aspect: "9/16", brand: "gucci", logo: "/logos/gucci.webp", brandName: "Gucci",
   landingUrl: "https://www.gucci.com/us/en/ca/women/ready-to-wear-for-women/dresses-and-jumpsuits-for-women-c-women-readytowear-dresses", snapshot: "/landing/gucci.jpg", cta: "Shop now", caption: "A new chapter, in motion.", embeddable: false,
   likes: 128400, comments: 2301,
 };
 
 export const FEED_AD_2: Flick = {
-  id: "feed-beauty", flickId: "tzed9x", aspect: "1/1", brand: "ultabeauty", logo: "/logos/ultabeauty.webp", brandName: "Ulta",
+  id: "feed-beauty", flickId: "tzed9x",
+  variants: variants("tzed9x", [
+    [1, "0", "https://www.ulta.com/p/macximal-silky-matte-lipstick-pimprod2043558?sku=2644466"],
+    [2, "1", "https://www.ulta.com/p/almost-lipstick-in-black-honey-xlsImpprod10792007"],
+    [3, "2", "https://www.ulta.com/p/matte-revolution-lipstick-pimprod2043355"],
+  ]), aspect: "1/1", brand: "ultabeauty", logo: "/logos/ultabeauty.webp", brandName: "Ulta",
   landingUrl: "https://www.ulta.com/p/macximal-silky-matte-lipstick-pimprod2043558?sku=2644466", snapshot: "/landing/ulta.jpg",
   cta: "Shop now", caption: "Find yours.", embeddable: false, likes: 6421, comments: 94,
   productName: "MACximal Silky Matte Lipstick", tagTop: "16%",
@@ -85,7 +113,12 @@ export const FEED_AD_3: Flick = {
   cta: "Tap to explore", caption: "One club. One team.", embeddable: false, likes: 3204, comments: 57,
 };
 export const REELS_AD_2: Flick = {
-  id: "reels-ram", flickId: "cx5dwz", aspect: "9/16", brand: "ramtrucks", logo: "/logos/ramtrucks.webp", brandName: "Ram Trucks",
+  id: "reels-ram", flickId: "cx5dwz",
+  variants: variants("cx5dwz", [
+    [1, "0", "https://www.ramtrucks.com/ram-1500/features.html"],
+    [2, "1", "https://www.ramtrucks.com/ram-1500/trx/design.html"],
+    [3, "2", "https://www.ramtrucks.com/ram-1500/design.html"],
+  ]), aspect: "9/16", brand: "ramtrucks", logo: "/logos/ramtrucks.webp", brandName: "Ram Trucks",
   landingUrl: "https://www.ramtrucks.com/", snapshot: "/landing/ram.jpg",
   cta: "Explore", caption: "Built to go further.", embeddable: false, likes: 28400, comments: 309,
 };
@@ -98,17 +131,31 @@ export const COACH_AD: Flick = {
   productName: "Tabby Shoulder Bag 26", tagTop: "18%", skuByDiff: sku("Tabby Shoulder Bag 26", ["$450.00", "$475.00", "$495.00"]),
 };
 export const SAMSUNG_AD: Flick = {
-  id: "feed-samsung", flickId: "yux3w1", aspect: "1/1", brand: "samsung", logo: "/logos/samsung.webp", brandName: "Samsung",
+  id: "feed-samsung", flickId: "yux3w1",
+  variants: variants("yux3w1", [
+    [1, "0", "https://www.samsung.com/us/smartphones/galaxy-s26/buy/galaxy-s26-512gb-unlocked-sku-sm-s942uzdfxaa/"],
+    [2, "1", "https://www.samsung.com/us/smartphones/galaxy-s26/buy/galaxy-s26-512gb-unlocked-sku-sm-s942uzvfxaa/"],
+    [3, "2", "https://www.samsung.com/us/smartphones/galaxy-s26/buy/galaxy-s26-512gb-unlocked-sku-sm-s942uzkfxaa/"],
+  ]), aspect: "1/1", brand: "samsung", logo: "/logos/samsung.webp", brandName: "Samsung",
   landingUrl: "https://www.samsung.com/us/smartphones/galaxy-s26/buy/galaxy-s26-512gb-unlocked-sku-sm-s942uzdfxaa/", snapshot: "/landing/samsung.jpg",
   cta: "Shop now", caption: "Meet the new Galaxy.", embeddable: true, likes: 64210, comments: 1890,
   productName: "Galaxy S26 512GB Unlocked", tagTop: "6%", skuByDiff: sku("Galaxy S26 512GB Unlocked", ["$999.99", "$1,099.99", "$1,199.99"]),
 };
 export const AVEENO_AD: Flick = {
-  id: "explore-aveeno", flickId: "um792g", aspect: "1/1", brand: "aveeno", logo: "/logos/aveeno.webp", brandName: "Aveeno",
+  id: "explore-aveeno", flickId: "um792g",
+  variants: variants("um792g", [
+    [1, "0", "https://aveeno.com/products/daily-moisturizing"],
+    [2, "1", "https://neutrogena.com/products/neutrogena-hydro-boost-hyaluronic-acid-serum/6811356"],
+    [3, "2", "https://www.mauimoisture.com/products/lightweight-hydration-hibiscus-water-shampoo"],
+  ]), aspect: "1/1", brand: "aveeno", logo: "/logos/aveeno.webp", brandName: "Aveeno",
   landingUrl: "https://www.aveeno.com/", snapshot: "/landing/aveeno.jpg", cta: "Learn more", caption: "Everyday care, your way.", embeddable: false, likes: 7311, comments: 120,
 };
 export const GM_AD: Flick = {
-  id: "feed-gm", flickId: "ccheju", aspect: "1/1", brand: "generalmills", logo: "/logos/generalmills.webp", brandName: "General Mills",
+  id: "feed-gm", flickId: "ccheju",
+  variants: variants("ccheju", [
+    [2, "1", "https://www.generalmills.com/our-food/brands/cheerios"],
+    [3, "2", "https://www.generalmills.com/food-we-make/brands/cinnamon-toast-crunch"],
+  ]), aspect: "1/1", brand: "generalmills", logo: "/logos/generalmills.webp", brandName: "General Mills",
   landingUrl: "https://www.generalmills.com/our-food/where-to-buy", snapshot: "/landing/generalmills.jpg", cta: "Learn more", caption: "Breakfast, the way you like it.", embeddable: false, likes: 12530, comments: 233,
 };
 

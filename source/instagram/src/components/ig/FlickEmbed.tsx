@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
-import { selectFlicks } from "./flick-policy";
+import { diffIdFromDetail, selectFlicks } from "./flick-policy";
+import { setSelectedDiff } from "./flick-selection";
 
 type Registration = { element: HTMLDivElement; priority: number };
 const FlickContext = createContext<{ active: string[]; register: (key: string, entry: Registration) => () => void } | null>(null);
@@ -70,6 +71,7 @@ export function FlickEmbed({ id, aspect, enabled = true, fill = false, priority 
       if (!data || data.source !== "flick" || data.id !== id) return;
       if (data.type === "vertex-ready") { ready = true; clearTimeout(timer); setState("ready"); }
       if (data.type === "vertex-error" && data.detail?.severity !== "warning") { clearTimeout(timer); setState("error"); }
+      if (data.type === "vertex-diff-change") { const diff = diffIdFromDetail(data.detail); if (diff !== null) setSelectedDiff(id, diff); }
       eventCallback.current?.(data.type, data.detail);
     };
     window.addEventListener("message", receive);

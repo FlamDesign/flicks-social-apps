@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { FEED_AD_3, type Flick } from "@/data/feed";
 import { Avatar } from "./Avatar";
 import { Chevron, Close, More, Share } from "./Icons";
+import { landingFor } from "./flick-selection";
 
 export type BrowserTarget = { flick: Flick; product?: string | undefined };
 const BrowserContext = createContext<(target: BrowserTarget) => void>(() => {});
@@ -12,7 +13,7 @@ export const useInAppBrowser = () => useContext(BrowserContext);
 export function BrowserProvider({ children }: { children: ReactNode }) {
   const [target, setTarget] = useState<BrowserTarget | null>(null);
   // The in-app browser is its own history entry: Back closes it instead of leaving the demo.
-  const open = useCallback((t: BrowserTarget) => { window.history.pushState({ ...window.history.state, browser: true }, ""); setTarget(t); }, []);
+  const open = useCallback((t: BrowserTarget) => { window.history.pushState({ ...window.history.state, browser: true }, ""); setTarget({ ...t, flick: landingFor(t.flick) }); }, []);
   useEffect(() => {
     const onPop = (e: PopStateEvent) => { if (!e.state?.browser) setTarget(null); };
     window.addEventListener("popstate", onPop); return () => window.removeEventListener("popstate", onPop);
