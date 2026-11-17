@@ -50,7 +50,7 @@ export function InAppBrowserProvider({ children }: { children: ReactNode }) {
     <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
       {snapshot ? <img src={snapshot} alt={`${flick.displayName ?? flick.brand} website`} className="block w-full" /> : <>
       <div className="flex items-center gap-3 px-4 py-4"><Avatar logo={flick.logo} monogram={flick.displayName ?? flick.brand} size={40} /><div className="min-w-0"><h1 className="text-[18px] font-semibold">{flick.displayName ?? flick.brand}</h1><p className="text-[12px] text-fb-muted">{flick.mock || flick.landingSheet ? "Demo collection" : "Flick preview"}</p></div></div>
-      {selected && <img key={selected.image} src={selected.image} alt={`${title} — selected Flick variant`} className="max-h-[52dvh] w-full object-contain bg-fb-elev" />}
+      {selected && <img key={selected.image} src={selected.image} alt={`${title} — selected Flick variant`} className="max-h-[62dvh] w-full bg-fb-elev object-cover object-top" />}
       <div className="px-4 py-5">
         <h2 className="break-words text-[22px] font-semibold">{title}</h2>
         {option?.price && <p className="mt-2 text-[20px] font-bold">{option.price}</p>}

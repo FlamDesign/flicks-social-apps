@@ -108,9 +108,11 @@ export const PAGE_AD: Flick = {
 };
 
 export const REELS_AD: Flick = {
-  id: "reels-gucci", flickId: "sfb39l", variants: {"2": {"position": 2, "url": "https://www.zapakasa.com/products/plum-velvet-peak-lapel-2-piece-prom-suits-with-pockets?variant=45628234268862", "snapshot": "/landing/sfb39l-2.jpg"}}, snapshot: "/landing/gucci.jpg", landingVariants: [{"image": "/landing-previews/sfb39l-0.jpg", "diff": "0"}, {"image": "/landing-previews/sfb39l-1.jpg", "diff": "2"}, {"image": "/landing-previews/sfb39l-2.jpg", "diff": "1"}], aspect: "9/16", brand: "gucci", displayName: "Gucci", logo: "/logos/gucci.webp",
+  id: "reels-gucci", flickId: "sfb39l", variants: {"0": {"position": 1, "url": "https://www.net-a-porter.com/en-us/shop/product/gucci/clothing/midi-dresses/belted-satin-jacquard-midi-shirt-dress/46376663162893685"}, "2": {"position": 2, "url": "https://www.mytheresa.com/us/en/women/gucci-cotton-velvet-blazer-green-p01088130"}}, snapshot: "/landing/gucci.jpg", landingVariants: [{"image": "/landing-previews/sfb39l-0.jpg", "diff": "0"}, {"image": "/landing-previews/sfb39l-1.jpg", "diff": "2"}, {"image": "/landing-previews/sfb39l-2.jpg", "diff": "1"}], aspect: "9/16", brand: "gucci", displayName: "Gucci", logo: "/logos/gucci.webp",
   landingUrl: "https://www.gucci.com/us/en/ca/women/ready-to-wear-for-women/dresses-and-jumpsuits-for-women-c-women-readytowear-dresses", embeddable: false, embedCheck: "Header check timed out; embedding unverified",
   cta: "Shop now", caption: "A look at Gucci.", likes: 128400, comments: 2301,
+  // Thumbnail order in the Flick is dress, suit, floral dress; the suit reports diff 2 and the floral dress diff 1.
+  skuByDiff: { "0": { label: "Belted satin jacquard midi shirt dress", price: "$3,850.00" }, "2": { label: "Cotton velvet blazer" }, "1": { label: "Flora print silk dress" } },
 };
 
 export const REELS_AD_2: Flick = {
