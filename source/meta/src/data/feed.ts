@@ -39,7 +39,8 @@ export type Flick = {
   location?: string;
   landingUrl?: string;
   snapshot?: string;
-  variants?: Record<string /* diff id */, { position: number; url: string; snapshot: string }>;
+  /** `snapshot` is a capture of that exact page; leave it out when there is none, and the browser shows the product card. */
+  variants?: Record<string /* diff id */, { position: number; url: string; snapshot?: string }>;
   landingVariants?: { image: string; diff: string }[];
   landingSheet?: { address: string; copy: string; button: string };
   embeddable?: boolean;
@@ -129,15 +130,15 @@ export const MARKETPLACE_AD: Flick & { productName: string; skuByDiff: Record<st
   skuByDiff: { "0": { label: "MACximal Silky Matte Lipstick", price: "$25.00" }, "1": { label: "MACximal Silky Matte Lipstick", price: "$27.00" }, "2": { label: "MACximal Silky Matte Lipstick", price: "$29.00" } },
 };
 
-// Invented demo prices, not live storefront prices. No variant names are inferred.
+// Three different bags, one per thumbnail, each with its own coach.com product page.
 export const COACH_AD = {
-  id: "shopping-coach", flickId: "d81eio", snapshot: "/landing/coach.jpg", landingVariants: [{"image": "/landing-previews/d81eio-0.jpg", "diff": "0"}, {"image": "/landing-previews/d81eio-1.jpg", "diff": "1"}, {"image": "/landing-previews/d81eio-2.jpg", "diff": "2"}], aspect: "1/1", brand: "coach", displayName: "Coach", logo: "/logos/coach.webp",
+  id: "shopping-coach", flickId: "d81eio", variants: {"0": {"position": 1, "url": "https://www.coach.com/products/tabby-shoulder-bag-26/CCX04-B4POP.html", "snapshot": "/landing/coach.jpg"}, "1": {"position": 2, "url": "https://www.coach.com/products/belted-ergo-shoulder-bag-26-in-signature-jacquard/CEN87-B4Z38.html"}, "2": {"position": 3, "url": "https://www.coach.com/products/rogue-bag-31/CCX23-B4MPL.html"}}, snapshot: "/landing/coach.jpg", landingVariants: [{"image": "/landing-previews/d81eio-0.jpg", "diff": "0"}, {"image": "/landing-previews/d81eio-1.jpg", "diff": "1"}, {"image": "/landing-previews/d81eio-2.jpg", "diff": "2"}], aspect: "1/1", brand: "coach", displayName: "Coach", logo: "/logos/coach.webp",
   productName: "Tabby Shoulder Bag 26", thumbnail: "/flick-thumbs/d81eio.jpg", tagTop: "20%",
   previewVideo: coachPreview.url,
   previewThumbnails: [coachThumb0.url, coachThumb1.url, coachThumb2.url],
   landingUrl: "https://www.coach.com/products/tabby-shoulder-bag-26/CCX04-B4POP.html", embeddable: false, embedCheck: "HTTP 403; X-Frame-Options", linkDomain: "coach.com",
   cta: "Shop now", caption: "Coach, in the spotlight.", likes: 4821, comments: 83,
-  skuByDiff: { "0": { label: "Tabby Shoulder Bag 26", price: "$450.00" }, "1": { label: "Tabby Shoulder Bag 26", price: "$475.00" }, "2": { label: "Tabby Shoulder Bag 26", price: "$495.00" } },
+  skuByDiff: { "0": { label: "Tabby Shoulder Bag 26", price: "$475.00" }, "1": { label: "Belted Ergo Shoulder Bag 26", price: "$295.00" }, "2": { label: "Rogue Bag 31", price: "$795.00" } },
 } satisfies Flick;
 export const SAMSUNG_AD = {
   id: "shopping-samsung", flickId: "yux3w1", variants: {"0": {"position": 1, "url": "https://www.samsung.com/us/smartphones/galaxy-s26/buy/galaxy-s26-512gb-unlocked-sku-sm-s942uzdfxaa/", "snapshot": "/landing/yux3w1-1.jpg"}, "1": {"position": 2, "url": "https://www.samsung.com/us/smartphones/galaxy-s26/buy/galaxy-s26-512gb-unlocked-sku-sm-s942uzvfxaa/", "snapshot": "/landing/yux3w1-2.jpg"}, "2": {"position": 3, "url": "https://www.samsung.com/us/smartphones/galaxy-s26/buy/galaxy-s26-512gb-unlocked-sku-sm-s942uzkfxaa/", "snapshot": "/landing/yux3w1-3.jpg"}}, snapshot: "/landing/samsung.jpg", landingVariants: [{"image": "/landing-previews/yux3w1-0.jpg", "diff": "0"}, {"image": "/landing-previews/yux3w1-1.jpg", "diff": "1"}, {"image": "/landing-previews/yux3w1-2.jpg", "diff": "2"}], aspect: "1/1", brand: "samsung", displayName: "Samsung", logo: "/logos/samsung.webp",

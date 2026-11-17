@@ -206,7 +206,7 @@
 .mock-flick-image { animation: knit-motion 9s ease-in-out infinite alternate; transition: opacity .45s ease; }
 @keyframes knit-motion { from { transform: scale(1); } to { transform: scale(1.035) translateY(-0.5%); } }
 @media (prefers-reduced-motion: reduce) { .mock-flick-image { animation: none; transition: none; } }
-.story-stage { perspective: 1000px; touch-action: pan-y; }
+.story-stage { perspective: 1000px; touch-action: none; user-select: none; -webkit-user-select: none; }
 .story-face { backface-visibility: hidden; transform-style: preserve-3d; }
 .story-settling { transition: transform 240ms ease-out; }
 @media (prefers-reduced-motion: reduce) { .story-stage { perspective: none; } .story-face { transform: none !important; } .story-settling { transition: none; } }

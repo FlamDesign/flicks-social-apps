@@ -33,7 +33,7 @@ export function InAppBrowserProvider({ children }: { children: ReactNode }) {
   const flick = destination?.flick;
   const diff = destination?.diff ?? "0";
   const variant = flick?.variants?.[diff];
-  const snapshot = variant?.snapshot ?? flick?.snapshot;
+  const snapshot = variant ? variant.snapshot : flick?.snapshot;
   const landingUrl = variant?.url ?? flick?.landingUrl;
   const images = flick?.landingVariants ?? flick?.mockVariants?.map((variant, i) => ({ image: variant.image, diff: String(i) })) ?? [];
   const selected = images.find(variant => variant.diff === diff) ?? images[0];

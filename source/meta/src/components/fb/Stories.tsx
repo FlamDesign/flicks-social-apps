@@ -54,9 +54,9 @@ export function StoryViewer({ story, onClose, onChange }: { story: Story; onClos
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
   useEffect(() => {
     if (story.sponsored || progress !== 0 || settling) return;
-    const t = setTimeout(onClose, 5000);
+    const t = setTimeout(() => { const next = STORIES[STORIES.indexOf(story) + 1]; if (next) onChange(next); else onClose(); }, 5000);
     return () => clearTimeout(t);
-  }, [story, onClose, progress, settling]);
+  }, [story, onClose, onChange, progress, settling]);
   const dur = story.sponsored ? DURATION : 5000;
   const ad = story.flick ?? null;
   const move = (direction: number) => { const next = STORIES[STORIES.indexOf(story) + direction]; if (next) onChange(next); else onClose(); };
@@ -73,6 +73,23 @@ export function StoryViewer({ story, onClose, onChange }: { story: Story; onClos
     setProgress(direction && next ? -direction : 0);
     timer.current = setTimeout(() => { if (direction && next) onChange(next); else { setSettling(false); setProgress(0); } }, window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 240);
   };
+  /** The gesture layer sits over the whole Flick so a swipe can start anywhere, including on the thumbnails.
+   *  A tap is handed to whatever control of the Flick lies under the finger (thumbnail, sound, its own button). */
+  const tapFlick = (stage: HTMLElement, x: number, y: number) => {
+    const frame = stage.querySelector("iframe");
+    try {
+      const doc = frame?.contentDocument;
+      if (!frame || !doc) return false;
+      const r = frame.getBoundingClientRect();
+      const fx = x - r.left, fy = y - r.top;
+      let el: Element | null = doc.elementFromPoint(fx, fy);
+      for (let i = 0; el?.shadowRoot && i < 4; i++) { const inner = el.shadowRoot.elementFromPoint(fx, fy); if (!inner || inner === el) break; el = inner; }
+      const control = el?.closest("button,a,[data-vertex-diff],[data-vertex-trigger]") as HTMLElement | null | undefined;
+      if (!control) return false;
+      control.click();
+      return true;
+    } catch { return false; }
+  };
   const adjacent = STORIES[STORIES.indexOf(story) + (progress < 0 ? 1 : -1)];
   const onPlayerEvent = (type: string, detail: unknown) => {
     if (!detail || typeof detail !== "object") return;
@@ -88,7 +105,7 @@ export function StoryViewer({ story, onClose, onChange }: { story: Story; onClos
   return <div data-placement={`story-${ad?.brand ?? story.username}`} className="story-stage fixed inset-0 z-50 overflow-hidden bg-fb-video text-fb-onvideo"
     onPointerDown={e => { if ((e.target as Element).closest("button,a,input")) return; start.current = { x: e.clientX, y: e.clientY }; e.currentTarget.setPointerCapture(e.pointerId); }}
     onPointerMove={e => { if (start.current) drag(e.clientX - start.current.x, e.clientY - start.current.y, e.currentTarget.clientWidth); }}
-    onPointerUp={e => { if (!start.current) return; const dx = e.clientX - start.current.x, dy = e.clientY - start.current.y; start.current = null; if (Math.abs(dx) < 8 && Math.abs(dy) < 8) move(storyTapDirection(e.clientX - e.currentTarget.getBoundingClientRect().left, e.currentTarget.clientWidth)); else release(dx, dy, e.currentTarget.clientWidth); }}
+    onPointerUp={e => { if (!start.current) return; const dx = e.clientX - start.current.x, dy = e.clientY - start.current.y; start.current = null; if (Math.abs(dx) < 8 && Math.abs(dy) < 8) { if (ad && tapFlick(e.currentTarget, e.clientX, e.clientY)) return; move(storyTapDirection(e.clientX - e.currentTarget.getBoundingClientRect().left, e.currentTarget.clientWidth)); } else release(dx, dy, e.currentTarget.clientWidth); }}
     onPointerCancel={() => { start.current = null; setProgress(0); }}>
     {adjacent && progress !== 0 && <div data-story-preview className={`story-face pointer-events-none absolute inset-0 ${settling ? "story-settling" : ""}`} style={{ transformOrigin: progress < 0 ? "left center" : "right center", transform: `translateX(${(progress < 0 ? 1 + progress : -1 + progress) * 100}%) rotateY(${progress < 0 ? 90 + progress * 90 : -90 + progress * 90}deg)` }}>
       <img src={adjacent.image} alt="" className="h-full w-full object-cover" draggable={false} />
@@ -96,6 +113,7 @@ export function StoryViewer({ story, onClose, onChange }: { story: Story; onClos
     </div>}
     <div data-story-face className={`story-face absolute inset-0 overflow-hidden ${settling ? "story-settling" : ""}`} style={{ transformOrigin: progress < 0 ? "right center" : "left center", transform: `translateX(${progress * 100}%) rotateY(${progress * 90}deg)` }}>
       {ad ? <FlickEmbed id={ad.flickId} aspect={ad.aspect} fill surface="story" priority={10} onEvent={onPlayerEvent} /> : <img src={story.image} alt="" draggable={false} className="h-full w-full object-cover" />}
+      {ad && <div aria-hidden data-story-gestures className="absolute inset-0" />}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-fb-video/50 to-transparent" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-fb-video/70 to-transparent" />
       <div className="pointer-events-none absolute inset-x-2 top-2 h-[2px] overflow-hidden rounded bg-fb-onvideo/35"><div className="h-full bg-fb-onvideo" style={{ animation: `fb-progress ${dur}ms linear infinite` }} /></div>

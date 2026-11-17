@@ -36,7 +36,8 @@ export type Flick = {
   comments: number;
 };
 /** position = thumbnail position in the Flick's own switcher (1-based); snapshot = public/landing/<flickId>-<position>.jpg. */
-export type LandingVariant = { position: number; url: string; snapshot: string };
+/** `snapshot` is a capture of that exact page; leave it out when there is none. */
+export type LandingVariant = { position: number; url: string; snapshot?: string };
 const variants = (flickId: string, rows: [position: number, diff: string, url: string][]) =>
   Object.fromEntries(rows.map(([position, diff, url]) => [diff, { position, url, snapshot: `/landing/${flickId}-${position}.jpg` }]));
 const M = (id: number) => `https://assets.mixkit.co/videos/${id}/${id}-720.mp4`;
@@ -126,9 +127,11 @@ export const REELS_AD_2: Flick = {
 const sku = (label: string, prices: string[]) => Object.fromEntries(prices.map((price, i) => [String(i), { label, price }]));
 export const COACH_AD: Flick = {
   id: "feed-coach", flickId: "d81eio", aspect: "1/1", brand: "coach", logo: "/logos/coach.webp", brandName: "Coach",
+  // Three different bags, one per thumbnail, each with its own coach.com product page.
+  variants: { "0": { position: 1, url: "https://www.coach.com/products/tabby-shoulder-bag-26/CCX04-B4POP.html", snapshot: "/landing/coach.jpg" }, "1": { position: 2, url: "https://www.coach.com/products/belted-ergo-shoulder-bag-26-in-signature-jacquard/CEN87-B4Z38.html" }, "2": { position: 3, url: "https://www.coach.com/products/rogue-bag-31/CCX23-B4MPL.html" } },
   landingUrl: "https://www.coach.com/products/tabby-shoulder-bag-26/CCX04-B4POP.html", snapshot: "/landing/coach.jpg",
   cta: "Shop now", caption: "Made to be carried.", embeddable: false, likes: 21840, comments: 402,
-  productName: "Tabby Shoulder Bag 26", tagTop: "18%", skuByDiff: sku("Tabby Shoulder Bag 26", ["$450.00", "$475.00", "$495.00"]),
+  productName: "Tabby Shoulder Bag 26", tagTop: "18%", skuByDiff: { "0": { label: "Tabby Shoulder Bag 26", price: "$475.00" }, "1": { label: "Belted Ergo Shoulder Bag 26", price: "$295.00" }, "2": { label: "Rogue Bag 31", price: "$795.00" } },
 };
 export const SAMSUNG_AD: Flick = {
   id: "feed-samsung", flickId: "yux3w1",
