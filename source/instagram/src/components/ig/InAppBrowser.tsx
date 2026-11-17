@@ -13,7 +13,12 @@ export const useInAppBrowser = () => useContext(BrowserContext);
 export function BrowserProvider({ children }: { children: ReactNode }) {
   const [target, setTarget] = useState<BrowserTarget | null>(null);
   // The in-app browser is its own history entry: Back closes it instead of leaving the demo.
-  const open = useCallback((t: BrowserTarget) => { window.history.pushState({ ...window.history.state, browser: true }, ""); setTarget({ ...t, flick: landingFor(t.flick) }); }, []);
+  const open = useCallback((t: BrowserTarget) => {
+    const flick = landingFor(t.flick);
+    // With no capture of the real page to show in the in-app browser, go straight to the real product page.
+    if (!flick.snapshot && flick.landingUrl && !flick.embeddable && !flick.landingSheet) { window.open(flick.landingUrl, "_blank", "noopener"); return; }
+    window.history.pushState({ ...window.history.state, browser: true }, ""); setTarget({ ...t, flick });
+  }, []);
   useEffect(() => {
     const onPop = (e: PopStateEvent) => { if (!e.state?.browser) setTarget(null); };
     window.addEventListener("popstate", onPop); return () => window.removeEventListener("popstate", onPop);

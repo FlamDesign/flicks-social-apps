@@ -27,8 +27,14 @@ export function InAppBrowserProvider({ children }: { children: ReactNode }) {
   const [menu, setMenu] = useState(false);
   const [pressed, setPressed] = useState(false);
   const open = (flick: Flick, option?: ProductOption) => {
+    const diff = variants.current.get(flick.flickId) ?? "0";
+    const picked = flick.variants?.[diff];
+    const page = picked ? picked.snapshot : flick.snapshot;
+    const url = picked?.url ?? flick.landingUrl;
+    // With no capture of the real page to show in the in-app browser, go straight to the real product page.
+    if (!page && url && !flick.mockVariants && !flick.landingSheet) { window.open(url, "_blank", "noopener"); return; }
     setMenu(false); setPressed(false);
-    setDestination({ flick, diff: variants.current.get(flick.flickId) ?? "0", option });
+    setDestination({ flick, diff, option });
   };
   const flick = destination?.flick;
   const diff = destination?.diff ?? "0";

@@ -57,7 +57,11 @@ export const STORY_AD: Flick = {
 };
 
 export const FEED_AD: Flick = {
-  id: "feed-cayman", flickId: "cayman", aspect: "1/1", brand: "visitcaymanislands", logo: "/logos/cayman.webp", brandName: "Cayman Islands",
+  id: "feed-cayman", flickId: "cayman", variants: variants("cayman", [
+    [1, "0", "https://www.visitcaymanislands.com/en-us/things-to-do/beaches"],
+    [2, "1", "https://www.visitcaymanislands.com/en-us/things-to-do/diving"],
+    [3, "2", "https://www.visitcaymanislands.com/en-us/things-to-do/cayman-islands-nightlife"],
+  ]), aspect: "1/1", brand: "visitcaymanislands", logo: "/logos/cayman.webp", brandName: "Cayman Islands",
   displayName: "Cayman Islands", monogram: "C",
   landingUrl: "https://www.visitcaymanislands.com/", snapshot: "/landing/cayman.jpg", cta: "Book Now", caption: "Island time starts here.", embeddable: false,
   likes: 18422, comments: 312,
@@ -66,7 +70,10 @@ export const FEED_AD: Flick = {
 export const CREATOR_AD: Flick & { creator: string; creatorAvatar: string } = {
   id: "creator-collab", flickId: "gwhttp",
   variants: variants("gwhttp", [
-    [3, "2", "https://www.topperzstore.com/new-era-los-angeles-dodgers-olive-edition-9forty-a-frame-trucker-snapback-hat"],
+    [1, "0", "https://www.neweracap.com/products/new-york-mets-9forty-apex-snapback"],
+    [2, "1", "https://www.neweracap.com/products/detroit-tigers-washed-stone-cotton-9twenty-adjustable"],
+    [3, "2", "https://www.neweracap.com/products/alpha-industries-x-los-angeles-dodgers-olive-green-9forty-m-crown-a-frame-snapback"],
+    [4, "3", "https://www.neweracap.com/products/new-york-yankees-side-patch-bright-red-9forty-adjustable"],
   ]), aspect: "1/1", brand: "neweracap", logo: "/logos/neweracap.webp", brandName: "New Era",
   landingUrl: "https://www.neweracap.com/collections/mlb-headwear", snapshot: "/landing/neweracap.jpg", cta: "Shop now", caption: "Game day, every day.", embeddable: false,
   likes: 42910, comments: 1204,
@@ -89,7 +96,7 @@ export const SHOPPING_AD: Flick & { productName: string; skuByDiff: Record<strin
 export const REELS_AD: Flick = {
   id: "reels-auto", flickId: "sfb39l",
   // Thumbnail order in the Flick is dress, suit, floral dress; the suit reports diff 2 and the floral dress diff 1.
-  variants: { "0": { position: 1, url: "https://www.net-a-porter.com/en-us/shop/product/gucci/clothing/midi-dresses/belted-satin-jacquard-midi-shirt-dress/46376663162893685" }, "2": { position: 2, url: "https://www.mytheresa.com/us/en/women/gucci-cotton-velvet-blazer-green-p01088130" } },
+  variants: { "0": { position: 1, url: "https://www.net-a-porter.com/en-us/shop/product/gucci/clothing/midi-dresses/belted-satin-jacquard-midi-shirt-dress/46376663162893685" } },
   skuByDiff: { "0": { label: "Belted satin jacquard midi shirt dress", price: "$3,850.00" }, "2": { label: "Cotton velvet blazer" }, "1": { label: "Flora print silk dress" } }, aspect: "9/16", brand: "gucci", logo: "/logos/gucci.webp", brandName: "Gucci",
   landingUrl: "https://www.gucci.com/us/en/ca/women/ready-to-wear-for-women/dresses-and-jumpsuits-for-women-c-women-readytowear-dresses", snapshot: "/landing/gucci.jpg", cta: "Shop now", caption: "A new chapter, in motion.", embeddable: false,
   likes: 128400, comments: 2301,
@@ -128,7 +135,7 @@ const sku = (label: string, prices: string[]) => Object.fromEntries(prices.map((
 export const COACH_AD: Flick = {
   id: "feed-coach", flickId: "d81eio", aspect: "1/1", brand: "coach", logo: "/logos/coach.webp", brandName: "Coach",
   // Three different bags, one per thumbnail, each with its own coach.com product page.
-  variants: { "0": { position: 1, url: "https://www.coach.com/products/tabby-shoulder-bag-26/CCX04-B4POP.html", snapshot: "/landing/coach.jpg" }, "1": { position: 2, url: "https://www.coach.com/products/belted-ergo-shoulder-bag-26-in-signature-jacquard/CEN87-B4Z38.html" }, "2": { position: 3, url: "https://www.coach.com/products/rogue-bag-31/CCX23-B4MPL.html" } },
+  variants: { "0": { position: 1, url: "https://www.coach.com/products/tabby-shoulder-bag-26/CCX04-B4POP.html", snapshot: "/landing/coach.jpg" }, "1": { position: 2, url: "https://www.coach.com/products/belted-ergo-shoulder-bag-26-in-signature-jacquard/CEN87-B4Z38.html", snapshot: "/landing/coach-1.jpg" }, "2": { position: 3, url: "https://www.coach.com/products/rogue-bag-31/CCX24-B4Z5D.html", snapshot: "/landing/coach-2.jpg" } },
   landingUrl: "https://www.coach.com/products/tabby-shoulder-bag-26/CCX04-B4POP.html", snapshot: "/landing/coach.jpg",
   cta: "Shop now", caption: "Made to be carried.", embeddable: false, likes: 21840, comments: 402,
   productName: "Tabby Shoulder Bag 26", tagTop: "18%", skuByDiff: { "0": { label: "Tabby Shoulder Bag 26", price: "$475.00" }, "1": { label: "Belted Ergo Shoulder Bag 26", price: "$295.00" }, "2": { label: "Rogue Bag 31", price: "$795.00" } },
@@ -156,6 +163,7 @@ export const AVEENO_AD: Flick = {
 export const GM_AD: Flick = {
   id: "feed-gm", flickId: "ccheju",
   variants: variants("ccheju", [
+    [1, "0", "https://www.generalmills.com/our-food/brands/lucky-charms"],
     [2, "1", "https://www.generalmills.com/our-food/brands/cheerios"],
     [3, "2", "https://www.generalmills.com/food-we-make/brands/cinnamon-toast-crunch"],
   ]), aspect: "1/1", brand: "generalmills", logo: "/logos/generalmills.webp", brandName: "General Mills",
