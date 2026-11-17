@@ -8,6 +8,7 @@ import { diffIdFromDetail, optionForDiff } from "./flick-policy";
 import { Button } from "@/components/ui/button";
 import { MockFlick } from "./MockFlick";
 import { useRememberFlickVariant } from "./InAppBrowser";
+import { MarketplacePreview } from "./MarketplacePreview";
 
 function ListingCard({ listing }: { listing: Listing }) {
   return (
@@ -26,7 +27,7 @@ function SponsoredTile({ flick, onOpen }: { flick: Flick; onOpen: () => void }) 
   return (
     <Button variant="ghost" onClick={onOpen} aria-label={`Open ${flick.displayName} listing`} className="h-auto min-w-0 flex-col items-stretch justify-start gap-0 overflow-hidden rounded-lg bg-fb-card p-0 text-left hover:bg-fb-card">
       <div className="relative flex aspect-square w-full shrink-0 items-center justify-center overflow-hidden bg-fb-elev">
-        {flick.thumbnail ? <img src={flick.thumbnail} alt={`${flick.displayName} Flick`} className="absolute inset-0 h-full w-full object-cover" /> : <span className="text-[56px] font-bold text-fb-muted">{flick.displayName?.charAt(0)}</span>}
+        <MarketplacePreview flick={flick} />
       </div>
       <div className="p-2">
         <div className="text-[15px] font-semibold">{flick.skuByDiff?.["0"]?.price}</div>

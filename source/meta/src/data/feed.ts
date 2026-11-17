@@ -8,6 +8,22 @@ import storyZaraVideo from "@/assets/videos/story-zara.mp4.asset.json";
 import storyRamVideo from "@/assets/videos/story-ram.mp4.asset.json";
 import storyGucciVideo from "@/assets/videos/story-gucci.mp4.asset.json";
 import storyGucciPoster from "@/assets/story-gucci-poster.jpg.asset.json";
+import coachPreview from "@/assets/videos/marketplace-d81eio.mp4.asset.json";
+import samsungPreview from "@/assets/videos/marketplace-yux3w1.mp4.asset.json";
+import aveenoPreview from "@/assets/videos/marketplace-um792g.mp4.asset.json";
+import ultaPreview from "@/assets/videos/marketplace-tzed9x.mp4.asset.json";
+import coachThumb0 from "@/assets/marketplace-thumbnails/d81eio-0.webp.asset.json";
+import coachThumb1 from "@/assets/marketplace-thumbnails/d81eio-1.webp.asset.json";
+import coachThumb2 from "@/assets/marketplace-thumbnails/d81eio-2.webp.asset.json";
+import samsungThumb0 from "@/assets/marketplace-thumbnails/yux3w1-0.webp.asset.json";
+import samsungThumb1 from "@/assets/marketplace-thumbnails/yux3w1-1.webp.asset.json";
+import samsungThumb2 from "@/assets/marketplace-thumbnails/yux3w1-2.webp.asset.json";
+import aveenoThumb0 from "@/assets/marketplace-thumbnails/um792g-0.webp.asset.json";
+import aveenoThumb1 from "@/assets/marketplace-thumbnails/um792g-1.webp.asset.json";
+import aveenoThumb2 from "@/assets/marketplace-thumbnails/um792g-2.webp.asset.json";
+import ultaThumb0 from "@/assets/marketplace-thumbnails/tzed9x-0.webp.asset.json";
+import ultaThumb1 from "@/assets/marketplace-thumbnails/tzed9x-1.webp.asset.json";
+import ultaThumb2 from "@/assets/marketplace-thumbnails/tzed9x-2.webp.asset.json";
 /**
  * FLICKS ON META — MEDIA CONFIG (single source of truth).
  * Swap a production Flick slot by changing its flickId.
@@ -38,6 +54,8 @@ export type Flick = {
   productName?: string;
   tagTop?: string;
   thumbnail?: string;
+  previewVideo?: string;
+  previewThumbnails?: string[];
   skuByDiff?: Record<string, { label: string; price?: string }>;
   linkDomain?: string;
   linkHeadline?: string;
@@ -106,6 +124,8 @@ export const MARKETPLACE_AD: Flick & { productName: string; skuByDiff: Record<st
   cta: "Shop now", caption: "From Ulta Beauty.", likes: 6421, comments: 94,
   productName: "MACximal Silky Matte Lipstick",
   thumbnail: "/flick-thumbs/tzed9x.jpg",
+  previewVideo: ultaPreview.url,
+  previewThumbnails: [ultaThumb0.url, ultaThumb1.url, ultaThumb2.url],
   skuByDiff: { "0": { label: "MACximal Silky Matte Lipstick", price: "$25.00" }, "1": { label: "MACximal Silky Matte Lipstick", price: "$27.00" }, "2": { label: "MACximal Silky Matte Lipstick", price: "$29.00" } },
 };
 
@@ -113,6 +133,8 @@ export const MARKETPLACE_AD: Flick & { productName: string; skuByDiff: Record<st
 export const COACH_AD = {
   id: "shopping-coach", flickId: "d81eio", snapshot: "/landing/coach.jpg", landingVariants: [{"image": "/landing-previews/d81eio-0.jpg", "diff": "0"}, {"image": "/landing-previews/d81eio-1.jpg", "diff": "1"}, {"image": "/landing-previews/d81eio-2.jpg", "diff": "2"}], aspect: "1/1", brand: "coach", displayName: "Coach", logo: "/logos/coach.webp",
   productName: "Tabby Shoulder Bag 26", thumbnail: "/flick-thumbs/d81eio.jpg", tagTop: "20%",
+  previewVideo: coachPreview.url,
+  previewThumbnails: [coachThumb0.url, coachThumb1.url, coachThumb2.url],
   landingUrl: "https://www.coach.com/products/tabby-shoulder-bag-26/CCX04-B4POP.html", embeddable: false, embedCheck: "HTTP 403; X-Frame-Options", linkDomain: "coach.com",
   cta: "Shop now", caption: "Coach, in the spotlight.", likes: 4821, comments: 83,
   skuByDiff: { "0": { label: "Tabby Shoulder Bag 26", price: "$450.00" }, "1": { label: "Tabby Shoulder Bag 26", price: "$475.00" }, "2": { label: "Tabby Shoulder Bag 26", price: "$495.00" } },
@@ -120,6 +142,8 @@ export const COACH_AD = {
 export const SAMSUNG_AD = {
   id: "shopping-samsung", flickId: "yux3w1", variants: {"0": {"position": 1, "url": "https://www.samsung.com/us/smartphones/galaxy-s26/buy/galaxy-s26-512gb-unlocked-sku-sm-s942uzdfxaa/", "snapshot": "/landing/yux3w1-1.jpg"}, "1": {"position": 2, "url": "https://www.samsung.com/us/smartphones/galaxy-s26/buy/galaxy-s26-512gb-unlocked-sku-sm-s942uzvfxaa/", "snapshot": "/landing/yux3w1-2.jpg"}, "2": {"position": 3, "url": "https://www.samsung.com/us/smartphones/galaxy-s26/buy/galaxy-s26-512gb-unlocked-sku-sm-s942uzkfxaa/", "snapshot": "/landing/yux3w1-3.jpg"}}, snapshot: "/landing/samsung.jpg", landingVariants: [{"image": "/landing-previews/yux3w1-0.jpg", "diff": "0"}, {"image": "/landing-previews/yux3w1-1.jpg", "diff": "1"}, {"image": "/landing-previews/yux3w1-2.jpg", "diff": "2"}], aspect: "1/1", brand: "samsung", displayName: "Samsung", logo: "/logos/samsung.webp",
   productName: "Galaxy S26 512GB Unlocked", thumbnail: "/flick-thumbs/yux3w1.jpg", tagTop: "20%",
+  previewVideo: samsungPreview.url,
+  previewThumbnails: [samsungThumb0.url, samsungThumb1.url, samsungThumb2.url],
   landingUrl: "https://www.samsung.com/us/smartphones/galaxy-s26/buy/galaxy-s26-512gb-unlocked-sku-sm-s942uzdfxaa/", embeddable: true, embedCheck: "HTTP 200", linkDomain: "samsung.com",
   cta: "Shop now", caption: "A closer look at Samsung.", likes: 8120, comments: 144,
   skuByDiff: { "0": { label: "Galaxy S26 512GB Unlocked", price: "$999.99" }, "1": { label: "Galaxy S26 512GB Unlocked", price: "$1,099.99" }, "2": { label: "Galaxy S26 512GB Unlocked", price: "$1,199.99" } },
@@ -127,6 +151,8 @@ export const SAMSUNG_AD = {
 export const AVEENO_AD = {
   id: "marketplace-aveeno", flickId: "um792g", variants: {"0": {"position": 1, "url": "https://aveeno.com/products/daily-moisturizing", "snapshot": "/landing/um792g-1.jpg"}, "1": {"position": 2, "url": "https://neutrogena.com/products/neutrogena-hydro-boost-hyaluronic-acid-serum/6811356", "snapshot": "/landing/um792g-2.jpg"}, "2": {"position": 3, "url": "https://www.mauimoisture.com/products/lightweight-hydration-hibiscus-water-shampoo", "snapshot": "/landing/um792g-3.jpg"}}, snapshot: "/landing/aveeno.jpg", landingVariants: [{"image": "/landing-previews/um792g-0.jpg", "diff": "0"}, {"image": "/landing-previews/um792g-1.jpg", "diff": "1"}, {"image": "/landing-previews/um792g-2.jpg", "diff": "2"}], aspect: "1/1", brand: "aveeno", displayName: "Aveeno", logo: "/logos/aveeno.webp",
   productName: "Aveeno", thumbnail: "/flick-thumbs/um792g.jpg", landingUrl: "https://www.aveeno.com/", embeddable: false, embedCheck: "HTTP 403",
+  previewVideo: aveenoPreview.url,
+  previewThumbnails: [aveenoThumb0.url, aveenoThumb1.url, aveenoThumb2.url],
   cta: "Shop now", caption: "A moment for Aveeno.", likes: 2240, comments: 42,
   skuByDiff: { "0": { label: "Aveeno", price: "$12.99" }, "1": { label: "Aveeno", price: "$14.99" }, "2": { label: "Aveeno", price: "$16.99" } },
 } satisfies Flick;
