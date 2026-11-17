@@ -46,6 +46,15 @@ export function StoriesRow({ onOpen }: { onOpen: (s: Story) => void }) {
 }
 
 const DURATION = 12000;
+/** Shared by the story on screen and the one turning in, so nothing pops when the turn lands. */
+function StoryHeader({ story, onClose }: { story: Story; onClose?: () => void }) {
+  const ad = story.flick ?? null;
+  return <div className="pointer-events-none absolute inset-x-3 top-5 flex items-center gap-2">
+    <Avatar src={story.avatar} logo={ad?.logo} monogram={story.monogram} size={32} />
+    <div className="flex-1 leading-tight"><div className="flex items-center gap-1 text-[13.5px] font-semibold">{story.username}{ad && <Verified />}<span className="ml-1 font-normal text-fb-onvideo/70">{ad ? "" : "2h"}</span></div>{ad && <div className="flex items-center gap-1 text-[12px]">Sponsored <Globe size={11} /> </div>}</div>
+    <More size={22} /><Button variant="ghost" size="icon" onClick={onClose} aria-label="Close" tabIndex={onClose ? 0 : -1} className={`${onClose ? "pointer-events-auto" : ""} text-fb-onvideo hover:bg-fb-onvideo/10`}><Close size={24} /></Button>
+  </div>;
+}
 export function StoryViewer({ story, onClose, onChange }: { story: Story; onClose: () => void; onChange: (story: Story) => void }) {
   const [progress, setProgress] = useState(0);
   const [settling, setSettling] = useState(false);
@@ -57,6 +66,10 @@ export function StoryViewer({ story, onClose, onChange }: { story: Story; onClos
     const t = setTimeout(() => { const next = STORIES[STORIES.indexOf(story) + 1]; if (next) onChange(next); else onClose(); }, 5000);
     return () => clearTimeout(t);
   }, [story, onClose, onChange, progress, settling]);
+  useEffect(() => {
+    const i = STORIES.indexOf(story);
+    [STORIES[i - 1], STORIES[i + 1]].forEach(s => { if (s?.image) new Image().src = s.image; });
+  }, [story]);
   const dur = story.sponsored ? DURATION : 5000;
   const ad = story.flick ?? null;
   const move = (direction: number) => { const next = STORIES[STORIES.indexOf(story) + direction]; if (next) onChange(next); else onClose(); };
@@ -71,7 +84,7 @@ export function StoryViewer({ story, onClose, onChange }: { story: Story; onClos
     const next = STORIES[STORIES.indexOf(story) + direction];
     setSettling(true);
     setProgress(direction && next ? -direction : 0);
-    timer.current = setTimeout(() => { if (direction && next) onChange(next); else { setSettling(false); setProgress(0); } }, window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 240);
+    timer.current = setTimeout(() => { if (direction && next) onChange(next); else { setSettling(false); setProgress(0); } }, window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 260);
   };
   /** The gesture layer sits over the whole Flick so a swipe can start anywhere, including on the thumbnails.
    *  A tap is handed to whatever control of the Flick lies under the finger (thumbnail, sound, its own button). */
@@ -107,21 +120,22 @@ export function StoryViewer({ story, onClose, onChange }: { story: Story; onClos
     onPointerMove={e => { if (start.current) drag(e.clientX - start.current.x, e.clientY - start.current.y, e.currentTarget.clientWidth); }}
     onPointerUp={e => { if (!start.current) return; const dx = e.clientX - start.current.x, dy = e.clientY - start.current.y; start.current = null; if (Math.abs(dx) < 8 && Math.abs(dy) < 8) { if (ad && tapFlick(e.currentTarget, e.clientX, e.clientY)) return; move(storyTapDirection(e.clientX - e.currentTarget.getBoundingClientRect().left, e.currentTarget.clientWidth)); } else release(dx, dy, e.currentTarget.clientWidth); }}
     onPointerCancel={() => { start.current = null; setProgress(0); }}>
-    {adjacent && progress !== 0 && <div data-story-preview className={`story-face pointer-events-none absolute inset-0 ${settling ? "story-settling" : ""}`} style={{ transformOrigin: progress < 0 ? "left center" : "right center", transform: `translateX(${(progress < 0 ? 1 + progress : -1 + progress) * 100}%) rotateY(${progress < 0 ? 90 + progress * 90 : -90 + progress * 90}deg)` }}>
+    {adjacent && progress !== 0 && <div data-story-preview aria-hidden className={`story-face pointer-events-none absolute inset-0 ${settling ? "story-settling" : ""}`} style={{ transformOrigin: progress < 0 ? "left center" : "right center", transform: `translateX(${(progress < 0 ? 1 + progress : -1 + progress) * 100}%) rotateY(${progress < 0 ? 90 + progress * 90 : -90 + progress * 90}deg)` }}>
       <img src={adjacent.image} alt="" className="h-full w-full object-cover" draggable={false} />
-      <div className="absolute inset-x-3 top-5 flex items-center gap-2"><Avatar src={adjacent.avatar} logo={adjacent.flick?.logo} monogram={adjacent.monogram} size={32} /><span className="text-[13.5px] font-semibold">{adjacent.username}</span></div>
+      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-fb-video/50 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-fb-video/70 to-transparent" />
+      <div className="absolute inset-x-2 top-2 h-[2px] rounded bg-fb-onvideo/35" />
+      <StoryHeader story={adjacent} />
+      {adjacent.flick && <div className="absolute inset-x-3 bottom-4"><FlickCta flick={adjacent.flick} className="h-11 w-full rounded-full bg-fb-card text-fb-fg hover:bg-fb-elev" /></div>}
+      {!adjacent.flick && <div className="absolute inset-x-3 bottom-4 flex items-center gap-3"><div className="flex-1 rounded-full border border-fb-onvideo/60 px-4 py-2.5 text-[14px] text-fb-onvideo/80">Send message</div></div>}
     </div>}
     <div data-story-face className={`story-face absolute inset-0 overflow-hidden ${settling ? "story-settling" : ""}`} style={{ transformOrigin: progress < 0 ? "right center" : "left center", transform: `translateX(${progress * 100}%) rotateY(${progress * 90}deg)` }}>
-      {ad ? <FlickEmbed id={ad.flickId} aspect={ad.aspect} fill surface="story" priority={10} onEvent={onPlayerEvent} /> : <img src={story.image} alt="" draggable={false} className="h-full w-full object-cover" />}
+      {ad ? <FlickEmbed id={ad.flickId} aspect={ad.aspect} fill surface="story" priority={10} onEvent={onPlayerEvent} poster={story.image} /> : <img src={story.image} alt="" draggable={false} className="h-full w-full object-cover" />}
       {ad && <div aria-hidden data-story-gestures className="absolute inset-0" />}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-fb-video/50 to-transparent" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-fb-video/70 to-transparent" />
       <div className="pointer-events-none absolute inset-x-2 top-2 h-[2px] overflow-hidden rounded bg-fb-onvideo/35"><div className="h-full bg-fb-onvideo" style={{ animation: `fb-progress ${dur}ms linear infinite` }} /></div>
-      <div className="pointer-events-none absolute inset-x-3 top-5 flex items-center gap-2">
-        <Avatar src={story.avatar} logo={ad?.logo} monogram={story.monogram} size={32} />
-        <div className="flex-1 leading-tight"><div className="flex items-center gap-1 text-[13.5px] font-semibold">{story.username}{ad && <Verified />}<span className="ml-1 font-normal text-fb-onvideo/70">{ad ? "" : "2h"}</span></div>{ad && <div className="flex items-center gap-1 text-[12px]">Sponsored <Globe size={11} /> </div>}</div>
-        <More size={22} /><Button variant="ghost" size="icon" onClick={onClose} aria-label="Close" className="pointer-events-auto text-fb-onvideo hover:bg-fb-onvideo/10"><Close size={24} /></Button>
-      </div>
+      <StoryHeader story={story} onClose={onClose} />
       <Button variant="ghost" aria-label="Previous story" onClick={() => move(-1)} className="absolute left-0 top-[45%] h-14 w-6 p-0 text-fb-onvideo/70 hover:bg-fb-onvideo/10">‹</Button>
       <Button variant="ghost" aria-label="Next story" onClick={() => move(1)} className="absolute right-0 top-[45%] h-14 w-6 p-0 text-fb-onvideo/70 hover:bg-fb-onvideo/10">›</Button>
       {ad && <div className="pointer-events-none absolute inset-x-3 bottom-4"><FlickCta flick={ad} className="pointer-events-auto h-11 w-full rounded-full bg-fb-card text-fb-fg hover:bg-fb-elev" /></div>}

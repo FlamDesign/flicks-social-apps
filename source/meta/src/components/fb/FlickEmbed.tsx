@@ -67,8 +67,10 @@ export function FlickProvider({ children }: { children: ReactNode }) {
   return <FlickContext.Provider value={{ active, register }}><FlickAudioBlockContext.Provider value={block}>{children}</FlickAudioBlockContext.Provider></FlickContext.Provider>;
 }
 
-export function FlickEmbed({ id, aspect, enabled = true, fill = false, priority = 0, onEvent, surface }: {
+export function FlickEmbed({ id, aspect, enabled = true, fill = false, priority = 0, onEvent, surface, poster }: {
   id: string; aspect: string; enabled?: boolean; fill?: boolean; priority?: number;
+  /** A still of the Flick. It covers the frame until the Flick is playing, then fades, so there is no loading flash. */
+  poster?: string;
   onEvent?: (type: string, detail: unknown) => void;
   surface?: "reel" | "story";
 }) {
@@ -111,9 +113,28 @@ export function FlickEmbed({ id, aspect, enabled = true, fill = false, priority 
     window.addEventListener("message", receive);
     return () => { clearTimeout(timer); window.removeEventListener("message", receive); };
   }, [mounted, id, attempt, rememberVariant, notify]);
+  // With a poster, hold it until the Flick has painted a moving frame, not just reported ready.
+  const [revealed, setRevealed] = useState(false);
+  useEffect(() => {
+    setRevealed(false);
+    if (!poster || !mounted || state !== "ready") return;
+    const since = performance.now();
+    const timer = setInterval(() => {
+      const waited = performance.now() - since;
+      let playing = false, video = false;
+      try {
+        const media = frame.current?.contentDocument?.querySelector("vertex-player")?.shadowRoot?.querySelectorAll("video");
+        media?.forEach(v => { video = true; if (v.readyState >= 2 && v.currentTime > 0.05) playing = true; });
+      } catch { /* The player is isolated or still starting. */ }
+      if (playing || (!video && waited > 250) || waited > 2000) { clearInterval(timer); setRevealed(true); }
+    }, 50);
+    return () => clearInterval(timer);
+  }, [poster, mounted, state, attempt]);
   return <div ref={box} data-flick-id={id} data-flick-state={mounted ? state : "idle"} className={`relative w-full overflow-hidden bg-fb-elev ${fill ? "h-full" : ""}`} style={fill ? undefined : { aspectRatio: aspect }}>
     {mounted && <iframe key={attempt} ref={frame} onLoad={() => notify(allowed.current)} src={"/flick-frame.html?id=" + id + (surface ? "&surface=" + surface : "")} allow="autoplay; fullscreen" title="Flick" className="absolute inset-0 h-full w-full border-0" />}
-    {(!mounted || state === "loading") && <div aria-label="Loading Flick" className="pointer-events-none absolute inset-0 flick-shimmer" />}
+    {poster
+      ? <img data-flick-poster src={poster} alt="" draggable={false} aria-hidden={revealed} className="pointer-events-none absolute inset-0 h-full w-full object-cover transition-opacity duration-300 ease-out motion-reduce:transition-none" style={{ opacity: revealed ? 0 : 1 }} />
+      : (!mounted || state === "loading") && <div aria-label="Loading Flick" className="pointer-events-none absolute inset-0 flick-shimmer" />}
     {mounted && state === "error" && <div className="pointer-events-none absolute inset-0 flex items-center justify-center"><div role="alert" className="pointer-events-auto flex items-center gap-3 rounded-md bg-fb-card px-3 py-2 text-[12px] text-fb-fg shadow-md"><span>Flick didn't load</span><Button variant="ghost" size="sm" onClick={() => setAttempt((n) => n + 1)} className="text-fb-blue hover:bg-fb-elev">Retry</Button></div></div>}
   </div>;
 }
