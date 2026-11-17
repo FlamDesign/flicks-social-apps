@@ -39,7 +39,6 @@ function ChatList({ onOpen, onClose }: { onOpen: (c: Chat) => void; onClose: () 
 }
 
 function SponsoredThread({ chat, onBack }: { chat: Chat; onBack: () => void }) {
-  const [notNow, setNotNow] = useState(false);
   const flick = chat.flick;
   return (
     <>
@@ -59,7 +58,6 @@ function SponsoredThread({ chat, onBack }: { chat: Chat; onBack: () => void }) {
               <div className="text-[12px] text-fb-muted">{flick.linkDomain} </div>
             </div>
             <FlickCta flick={flick} className="h-11 w-full rounded-none border-t border-fb-sep bg-fb-card text-fb-blue hover:bg-fb-elev" />
-            <button aria-pressed={notNow} onClick={() => setNotNow((v) => !v)} className={`w-full border-t border-fb-sep py-2.5 text-[14px] font-semibold ${notNow ? "bg-fb-elev text-fb-muted" : "text-fb-fg"}`}>Not now</button>
           </div>
         </div> : <p className="rounded-2xl bg-fb-elev p-3 text-[14px]">{chat.preview}</p>}
         {chat.shared && <p className="mt-3 ml-10 w-3/4 rounded-2xl bg-fb-elev px-3 py-2 text-[14px]">What do you think?</p>}
