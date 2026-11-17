@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { usePrototypeBack, usePrototypeState } from "./PrototypeNavigation";
-import { CHATS, FEED, ME, STORIES, type Chat, type Flick, type FlickPlacement, type Story } from "@/data/feed";
+import { CHATS, FEED, ME, STORIES, type Chat, type Flick, type FlickPlacement, type SellerChat, type Story } from "@/data/feed";
 import { InAppBrowserProvider } from "./InAppBrowser";
 import { FlickFormats } from "./FlickFormats";
 import { Avatar } from "./Avatar";
@@ -62,21 +62,22 @@ function StaticScreen({ tab }: { tab: Tab }) {
 
 export function FacebookApp() {
   const [view, setView] = usePrototypeState<{
-    tab: Tab; story: Story | null; messenger: boolean; listing: Flick | null; thread: Chat | null;
+    tab: Tab; story: Story | null; messenger: boolean; listing: Flick | null; thread: Chat | null; seller?: SellerChat | null;
     destination: { placement: FlickPlacement; visit: number } | null;
   }>("screen", { tab: "home", story: null, messenger: false, listing: null, thread: null, destination: null });
-  const { tab, story, messenger, listing, thread, destination } = view;
-  const setTab = (tab: Tab) => setView(v => ({ ...v, tab, listing: null, story: null, thread: null, messenger: false, destination: null }));
+  const { tab, story, messenger, listing, thread, destination, seller } = view;
+  const setTab = (tab: Tab) => setView(v => ({ ...v, tab, listing: null, story: null, thread: null, seller: null, messenger: false, destination: null }));
+  const messageSeller = (seller: SellerChat) => setView(v => ({ ...v, messenger: true, thread: null, seller }));
   const setStory = (story: Story | null) => setView(v => ({ ...v, story }));
   const setMessenger = (messenger: boolean) => setView(v => ({ ...v, messenger }));
   const setListing = (listing: Flick | null) => setView(v => ({ ...v, tab: "marketplace", listing }), listing === null);
   const setThread = (thread: Chat | null) => thread ? setView(v => ({ ...v, thread })) : back();
-  const back = usePrototypeBack(() => setView(v => ({ ...v, story: null, listing: null, thread: null, messenger: false, tab: "home" })));
+  const back = usePrototypeBack(() => setView(v => ({ ...v, story: null, listing: null, thread: null, seller: null, messenger: false, tab: "home" })));
   const screen = useRef<HTMLDivElement>(null);
   const arrived = useRef(new Set<number>());
   const navigateSection = (section: FlickPlacement["section"]) => {
     const placement = section === "HOME" ? { key: FEED[0] && "flick" in FEED[0] ? FEED[0].flick.id : "", surface: "feed" } : null;
-    setView({ story: null, listing: null, messenger: section === "MESSENGER", thread: null,
+    setView({ story: null, listing: null, messenger: section === "MESSENGER", thread: null, seller: null,
       tab: section === "VIDEO" ? "video" : section === "MARKETPLACE" ? "marketplace" : "home",
       destination: placement ? { placement: placement as FlickPlacement, visit: Date.now() } : null });
   };
@@ -126,11 +127,11 @@ export function FacebookApp() {
       <main className="relative min-h-0 flex-1">
         <div className={tab === "home" ? "h-full" : "hidden"}><HomeFeed onStory={setStory} adsEnabled={tab === "home" && !story && !messenger} /></div>
         {tab === "video" && <ReelsTab onBack={back} onProfile={() => setTab("menu")} />}
-        {tab === "marketplace" && <MarketplaceTab open={listing} setOpen={setListing} />}
+        {tab === "marketplace" && <MarketplaceTab open={listing} setOpen={setListing} onMessage={messageSeller} />}
         {(tab === "friends" || tab === "notifications" || tab === "menu") && <StaticScreen tab={tab} />}
       </main>
       {story && <StoryViewer key={story.username} story={story} onClose={close} onChange={setStory} />}
-      {messenger && <Messenger thread={thread} setThread={setThread} onClose={back} />}
+      {messenger && <Messenger thread={thread} setThread={setThread} onClose={back} seller={seller ?? null} />}
       <FlickFormats onSelect={navigateSection} />
     </InAppBrowserProvider></div></FlickProvider>
   );

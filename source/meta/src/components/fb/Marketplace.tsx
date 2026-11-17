@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { MARKETPLACE_ITEMS, type Flick, type Listing } from "@/data/feed";
+import { MARKETPLACE_ITEMS, type Flick, type Listing, type SellerChat } from "@/data/feed";
 import { Avatar } from "./Avatar";
 import { Back, Bookmark, Chevron, Comment, More, Search, Share } from "./Icons";
 import { FlickEmbed } from "./FlickEmbed";
@@ -38,7 +38,8 @@ function SponsoredTile({ flick, onOpen }: { flick: Flick; onOpen: () => void }) 
   );
 }
 
-function ListingDetail({ flick, onBack }: { flick: Flick; onBack: () => void }) {
+function ListingDetail({ flick, onBack, onMessage }: { flick: Flick; onBack: () => void; onMessage: (chat: SellerChat) => void }) {
+  const picked = useRef(0);
   const rememberVariant = useRememberFlickVariant();
   const [option, setOption] = useState<{ label: string; price?: string }>(flick.skuByDiff?.["0"] ?? { label: "" });
   const [change, setChange] = useState(0);
@@ -51,7 +52,12 @@ function ListingDetail({ flick, onBack }: { flick: Flick; onBack: () => void }) 
     if (id === null) return;
     const result = optionForDiff(id, seen.current, flick.skuByDiff ?? {}, true);
     seen.current = result.ids;
+    picked.current = Number.isInteger(Number(id)) ? Number(id) : result.ids.indexOf(id);
     setOption(result.option); setChange((n) => n + 1);
+  };
+  const messageSeller = () => {
+    const image = flick.previewThumbnails?.[picked.current] ?? flick.mockVariants?.[picked.current]?.thumbnail ?? flick.thumbnail;
+    onMessage({ flick, label: option.label || flick.productName || flick.displayName || "",...(option.price ? { price: option.price } : {}), ...(image ? { image } : {}) });
   };
   const rowBtn = "flex h-9 flex-1 items-center justify-center gap-1.5 rounded-md bg-fb-elev text-[14px] font-semibold text-fb-fg";
   return (
@@ -60,7 +66,7 @@ function ListingDetail({ flick, onBack }: { flick: Flick; onBack: () => void }) 
         <Button variant="ghost" size="icon" aria-label="Back" onClick={onBack} className="hover:bg-fb-elev"><Back size={24} /></Button>
         <span className="text-[17px] font-semibold">Listing</span>
       </header>
-      {flick.mock ? <MockFlick flick={flick} onChange={id => { rememberVariant(flick.flickId, { diff: id }); setOption(flick.skuByDiff?.[id] ?? { label: "" }); setChange(n => n + 1); }} /> : <FlickEmbed id={flick.flickId} aspect={flick.aspect} priority={8} onEvent={onEvent} />}
+      {flick.mock ? <MockFlick flick={flick} onChange={id => { picked.current = Number(id) || 0; rememberVariant(flick.flickId, { diff: id }); setOption(flick.skuByDiff?.[id] ?? { label: "" }); setChange(n => n + 1); }} /> : <FlickEmbed id={flick.flickId} aspect={flick.aspect} priority={8} onEvent={onEvent} />}
       <div className="space-y-1 px-3 pt-3">
         <div className="text-[17px] font-semibold">{flick.productName}</div>
         <div key={change} className="flick-row-pop text-[17px] font-bold">{option.price}</div>
@@ -70,7 +76,7 @@ function ListingDetail({ flick, onBack }: { flick: Flick; onBack: () => void }) 
         <FlickCta flick={flick} option={option} className="flex h-10 w-full justify-center gap-1 rounded-lg bg-fb-blue text-[15px] font-semibold text-fb-card hover:bg-fb-blue/90 aria-pressed:bg-fb-blue/70" />
       </div>
       <div className="flex gap-2 px-3 py-3">
-        <button className={rowBtn}><Comment size={18} />Message</button>
+        <button onClick={() => messageSeller()} className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-md bg-fb-blue text-[14px] font-semibold text-fb-card"><Comment size={18} />Message</button>
         <button aria-pressed={saved} onClick={() => setSaved((s) => !s)} className={rowBtn}><Bookmark size={18} filled={saved} />{saved ? "Saved" : "Save"}</button>
         <button className={rowBtn}><Share size={18} />Share</button>
       </div>
@@ -87,8 +93,8 @@ function ListingDetail({ flick, onBack }: { flick: Flick; onBack: () => void }) 
   );
 }
 
-export function MarketplaceTab({ open, setOpen }: { open: Flick | null; setOpen: (flick: Flick | null) => void }) {
-  if (open) return <ListingDetail key={open.flickId} flick={open} onBack={() => setOpen(null)} />;
+export function MarketplaceTab({ open, setOpen, onMessage }: { open: Flick | null; setOpen: (flick: Flick | null) => void; onMessage: (chat: SellerChat) => void }) {
+  if (open) return <ListingDetail key={open.flickId} flick={open} onBack={() => setOpen(null)} onMessage={onMessage} />;
   return (
     <div className="no-scrollbar h-full overflow-y-auto bg-fb-bg">
       <header className="sticky top-0 z-20 flex h-[52px] items-center justify-between bg-fb-card px-4">

@@ -285,6 +285,8 @@ export const MARKETPLACE_ITEMS: MarketplaceItem[] = [
 ];
 
 /* ---------------- Messenger ---------------- */
+/** A chat the viewer starts with a Marketplace seller about the option they picked in the Flick. */
+export type SellerChat = { flick: Flick; label: string; price?: string | undefined; image?: string | undefined };
 export type Chat = { id: string; name: string; avatar: string; monogram?: string; preview: string; time: string; sponsored?: boolean; unread?: boolean; flick?: Flick; shared?: boolean };
 export const CHATS: Chat[] = [
   { id: "c2", name: "Cayman Islands", avatar: "", monogram: "C", preview: "Sponsored · A moment in the Cayman Islands.", time: "9:15 AM", sponsored: true, flick: FEED_AD },
