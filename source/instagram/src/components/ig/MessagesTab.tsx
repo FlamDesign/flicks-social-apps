@@ -1,6 +1,4 @@
-import { useState } from "react";
 import { THREADS, ME, type Flick, type Thread } from "@/data/feed";
-import { Button } from "@/components/ui/button";
 import { Avatar } from "./Avatar";
 import { FlickEmbed } from "./FlickEmbed";
 import { FlickCta } from "./FlickCta";
@@ -14,16 +12,15 @@ function SharedPost({ flick }: { flick: Flick }) {
   </div>;
 }
 
+/** The sponsored card carries the Flick; its one action sits below it as a separate pill. */
 function SponsoredCard({ flick }: { flick: Flick }) {
-  const [notNow, setNotNow] = useState(false);
-  return <div className="w-[260px] overflow-hidden rounded-2xl bg-ig-elev">
-    <div className="px-3 pt-2 text-[11px] text-ig-muted">Sponsored</div>
-    <div className="mt-1"><FlickEmbed id={flick.flickId} aspect="1/1" /></div>
-    <div className="px-3 py-2 text-[13px]">{flick.caption}</div>
-    <div className="grid grid-cols-2 gap-2 px-3 pb-3">
-      <FlickCta flick={flick} chevron={false} className="h-9 bg-ig-blue text-ig-fg hover:bg-ig-blue/90" />
-      <Button variant="ghost" aria-pressed={notNow} onClick={() => setNotNow((v) => !v)} className="h-9 bg-ig-sep text-ig-fg hover:bg-ig-sep/80 aria-pressed:opacity-60">Not now</Button>
+  return <div className="flex w-[260px] flex-col items-start gap-2">
+    <div className="w-full overflow-hidden rounded-2xl bg-ig-elev">
+      <div className="px-3 pt-2 text-[11px] text-ig-muted">Sponsored</div>
+      <div className="mt-1"><FlickEmbed id={flick.flickId} aspect="1/1" /></div>
+      <div className="px-3 py-2 text-[13px]">{flick.caption}</div>
     </div>
+    <FlickCta flick={flick} chevron={false} className="h-9 rounded-full bg-ig-blue px-5 text-[14px] font-semibold text-ig-fg hover:bg-ig-blue/90" />
   </div>;
 }
 
