@@ -276,13 +276,13 @@ export const THREADS: Thread[] = [
 /* ---------------- Floating "Flicks" menu (counts generated from the config above) ---------------- */
 export type Tab = "home" | "reels" | "messages" | "search" | "profile";
 export type FlickSection = { tab: Tab; label: string; /** data-placement key of the section's first Flick */ first: string; thread?: string | undefined; /** open this story index */ story?: number };
-const firstDm = THREADS.find((t) => t.messages.some((m) => "share" in m || "sponsored" in m));
 export const FLICK_SECTIONS: FlickSection[] = [
   { tab: "home", label: "Flicks for Stories", first: "story-0", story: 0 },
   { tab: "home", label: "Flicks for Home", first: `feed-${FEED[0]?.id}` },
   { tab: "reels", label: "Flicks for Reels", first: `reel-${REELS.find((r) => r.kind === "ad")?.id}` },
   { tab: "search", label: "Flicks for Search", first: `explore-${EXPLORE.find((t) => t.kind !== "photo")?.id}` },
-  { tab: "messages", label: "Flicks for Messages", first: `dm-${firstDm?.id}`, thread: firstDm?.id },
+  // Lands on the inbox, so every conversation is visible; opening the first thread directly hid the rest.
+  { tab: "messages", label: "Flicks for Messages", first: "messages" },
 ];
 
 export const fmt = (n: number) =>

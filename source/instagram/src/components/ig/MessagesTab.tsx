@@ -44,7 +44,7 @@ function ThreadView({ thread, onBack }: { thread: Thread; onBack: () => void }) 
 export function MessagesTab({ thread, onThread }: { thread: string | null; onThread: (id: string | null) => void }) {
   const open = THREADS.find((t) => t.id === thread);
   if (open) return <ThreadView thread={open} onBack={() => onThread(null)} />;
-  return <div className="no-scrollbar h-full overflow-y-auto overscroll-contain">
+  return <div data-placement="messages" className="no-scrollbar h-full overflow-y-auto overscroll-contain">
     <header className="flex h-[50px] items-center px-4 text-[20px] font-bold">{ME.username}<Chevron size={14} className="ml-1 mt-1 rotate-90" /></header>
     <div className="px-4 pb-2"><div className="flex h-9 items-center rounded-lg bg-ig-elev px-3 text-[15px] text-ig-muted">Search</div></div>
     <div className="flex items-center justify-between px-4 py-2 text-[15px] font-semibold"><span>Messages</span><span className="text-[14px] font-normal text-ig-muted">Requests</span></div>

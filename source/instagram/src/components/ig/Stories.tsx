@@ -78,19 +78,28 @@ export function StoryViewer({ index, onIndex, onClose }: { index: number; onInde
   }, [ad, index]);
   const [dx, setDx] = useState(0);
   const [anim, setAnim] = useState(false);
-  const drag = useRef<{ x: number; moved: boolean } | null>(null);
+  /** Pull-down distance. Past the threshold the story collapses back to the home feed, as on Instagram. */
+  const [dy, setDy] = useState(0);
+  const [leaving, setLeaving] = useState(false);
+  const drag = useRef<{ x: number; y: number; moved: boolean; axis: "x" | "y" | null } | null>(null);
   const swallow = useRef(false);
   const step = (d: number) => { const n = index + d; if (n < 0) return; if (n >= STORIES.length) onClose(); else onIndex(n); };
   useEffect(() => {
-    if (ad || dx) return;
+    if (ad || dx || dy) return;
     const t = setTimeout(() => { if (index + 1 >= STORIES.length) onClose(); else onIndex(index + 1); }, 5000);
     return () => clearTimeout(t);
-  }, [ad, index, onIndex, onClose, dx]);
+  }, [ad, index, onIndex, onClose, dx, dy]);
   const w = () => root.current?.offsetWidth ?? 390;
   const release = () => {
     const d = drag.current; drag.current = null;
     if (!d?.moved) return;
     swallow.current = true; setTimeout(() => { swallow.current = false; }, 50);
+    if (d.axis === "y") {
+      const quick = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      setAnim(true);
+      if (dy > 110) { setLeaving(true); setTimeout(onClose, quick ? 0 : 220); return; }
+      setDy(0); setTimeout(() => setAnim(false), 260); return;
+    }
     const dir = dx < 0 ? 1 : -1;
     const ok = Math.abs(dx) > w() * 0.22 && (dir === 1 || index > 0);
     setAnim(true);
@@ -103,15 +112,30 @@ export function StoryViewer({ index, onIndex, onClose }: { index: number; onInde
   const a = (dx / W) * 90;
   const nb = dx < 0 ? STORIES[index + 1] : dx > 0 ? STORIES[index - 1] : undefined;
   const tr = anim ? "transform 260ms ease-out" : "none";
-  return <div ref={root} data-placement={ad ? `story-${index}` : undefined} className="fixed inset-0 z-50 select-none overflow-hidden bg-ig-bg" style={{ perspective: 1200, touchAction: "none" }}
-    onPointerDown={(e) => { if (!anim) drag.current = { x: e.clientX, moved: false }; }}
-    onPointerMove={(e) => { const d = drag.current; if (!d) return; const m = e.clientX - d.x; if (!d.moved && Math.abs(m) < 8) return; if (!d.moved) { d.moved = true; e.currentTarget.setPointerCapture(e.pointerId); } setDx(index === 0 && m > 0 ? m * 0.25 : m); }}
+  const H = root.current?.offsetHeight ?? 844;
+  const pull = leaving ? 1 : Math.min(1, dy / H);
+  return <div ref={root} data-placement={ad ? `story-${index}` : undefined} className="fixed inset-0 z-50 select-none overflow-hidden" style={{ touchAction: "none" }}
+    onPointerDown={(e) => { if (!anim) drag.current = { x: e.clientX, y: e.clientY, moved: false, axis: null }; }}
+    onPointerMove={(e) => {
+      const d = drag.current; if (!d) return;
+      const m = e.clientX - d.x, v = e.clientY - d.y;
+      if (!d.moved && Math.abs(m) < 8 && Math.abs(v) < 8) return;
+      if (!d.moved) {
+        // A mostly-vertical upward drag is not a gesture here; let it go.
+        if (Math.abs(v) > Math.abs(m) && v < 0) { drag.current = null; return; }
+        d.moved = true; d.axis = Math.abs(v) > Math.abs(m) ? "y" : "x"; e.currentTarget.setPointerCapture(e.pointerId);
+      }
+      if (d.axis === "y") setDy(Math.max(0, v)); else setDx(index === 0 && m > 0 ? m * 0.25 : m);
+    }}
     onPointerUp={release} onPointerCancel={release}
     onClickCapture={(e) => { if (swallow.current) { e.stopPropagation(); e.preventDefault(); } }}>
+    <div aria-hidden data-story-backdrop className="absolute inset-0 bg-ig-bg" style={{ opacity: leaving ? 0 : 1 - Math.min(1, pull * 1.6), transition: anim ? "opacity 220ms ease-out" : "none" }} />
+    <div data-story-sheet className="absolute inset-0 overflow-hidden" style={{ perspective: 1200, transformOrigin: "50% 100%", borderRadius: dy || leaving ? 18 : 0, opacity: leaving ? 0 : 1,
+      transform: leaving ? `translateY(${H * 0.6}px) scale(0.5)` : dy ? `translateY(${dy}px) scale(${1 - pull * 0.35})` : undefined, transition: anim ? "transform 220ms ease-out, opacity 220ms ease-out" : "none" }}>
     {nb && <div className="absolute inset-0" style={{ transformOrigin: dx < 0 ? "0% 50%" : "100% 50%", transform: `translateX(${dx < 0 ? W + dx : dx - W}px) rotateY(${dx < 0 ? a + 90 : a - 90}deg)`, transition: tr, backfaceVisibility: "hidden" }}><Face story={nb} /></div>}
     <div className="absolute inset-0 overflow-hidden" style={{ transformOrigin: dx < 0 ? "100% 50%" : "0% 50%", transform: dx ? `translateX(${dx}px) rotateY(${a}deg)` : undefined, transition: tr, backfaceVisibility: "hidden" }}>
       {ad ? <FlickEmbed key={index} id={ad.flickId} aspect={ad.aspect} fill priority={10} slot="reel" /> : <img src={story.image} alt="" className="h-full w-full object-cover" />}
-      {dx !== 0 && <div className="absolute inset-0" />}
+      {(dx !== 0 || dy !== 0) && <div className="absolute inset-0" />}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-ig-bg/50 to-transparent" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-ig-bg/70 to-transparent" />
       {/* The creative can be shorter than the screen: use its actual thumbnail bounds,
@@ -126,6 +150,7 @@ export function StoryViewer({ index, onIndex, onClose }: { index: number; onInde
       </div>
       {ad ? <div className="pointer-events-none absolute inset-x-0 bottom-5 flex justify-center"><FlickCta flick={ad} chevron={false} className="pointer-events-auto h-10 rounded-full bg-ig-fg px-6 text-[14px] font-semibold text-ig-bg hover:bg-ig-fg/90" /></div>
         : <div className="absolute inset-x-3 bottom-4 flex items-center gap-3"><div className="flex-1 rounded-full border border-ig-fg/60 px-4 py-2.5 text-[14px] text-ig-fg/80">Send message</div><Heart size={26} /><Share size={24} /></div>}
+    </div>
     </div>
   </div>;
 }
