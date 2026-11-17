@@ -133,7 +133,7 @@ export function FlickEmbed({ id, aspect, enabled = true, fill = false, priority 
   return <div ref={box} data-flick-id={id} data-flick-state={mounted ? state : "idle"} className={`relative w-full overflow-hidden bg-fb-elev ${fill ? "h-full" : ""}`} style={fill ? undefined : { aspectRatio: aspect }}>
     {mounted && <iframe key={attempt} ref={frame} onLoad={() => notify(allowed.current)} src={"/flick-frame.html?id=" + id + (surface ? "&surface=" + surface : "")} allow="autoplay; fullscreen" title="Flick" className="absolute inset-0 h-full w-full border-0" />}
     {poster
-      ? <img data-flick-poster src={poster} alt="" draggable={false} aria-hidden={revealed} className="pointer-events-none absolute inset-0 h-full w-full object-cover transition-opacity duration-300 ease-out motion-reduce:transition-none" style={{ opacity: revealed ? 0 : 1 }} />
+      ? <img data-flick-poster src={poster} alt="" draggable={false} aria-hidden={revealed} className="pointer-events-none absolute inset-0 h-full w-full object-contain object-top transition-opacity duration-300 ease-out motion-reduce:transition-none" style={{ opacity: revealed ? 0 : 1 }} />
       : (!mounted || state === "loading") && <div aria-label="Loading Flick" className="pointer-events-none absolute inset-0 flick-shimmer" />}
     {mounted && state === "error" && <div className="pointer-events-none absolute inset-0 flex items-center justify-center"><div role="alert" className="pointer-events-auto flex items-center gap-3 rounded-md bg-fb-card px-3 py-2 text-[12px] text-fb-fg shadow-md"><span>Flick didn't load</span><Button variant="ghost" size="sm" onClick={() => setAttempt((n) => n + 1)} className="text-fb-blue hover:bg-fb-elev">Retry</Button></div></div>}
   </div>;

@@ -121,7 +121,8 @@ export function StoryViewer({ story, onClose, onChange }: { story: Story; onClos
     onPointerUp={e => { if (!start.current) return; const dx = e.clientX - start.current.x, dy = e.clientY - start.current.y; start.current = null; if (Math.abs(dx) < 8 && Math.abs(dy) < 8) { if (ad && tapFlick(e.currentTarget, e.clientX, e.clientY)) return; move(storyTapDirection(e.clientX - e.currentTarget.getBoundingClientRect().left, e.currentTarget.clientWidth)); } else release(dx, dy, e.currentTarget.clientWidth); }}
     onPointerCancel={() => { start.current = null; setProgress(0); }}>
     {adjacent && progress !== 0 && <div data-story-preview aria-hidden className={`story-face pointer-events-none absolute inset-0 ${settling ? "story-settling" : ""}`} style={{ transformOrigin: progress < 0 ? "left center" : "right center", transform: `translateX(${(progress < 0 ? 1 + progress : -1 + progress) * 100}%) rotateY(${progress < 0 ? 90 + progress * 90 : -90 + progress * 90}deg)` }}>
-      <img src={adjacent.image} alt="" className="h-full w-full object-cover" draggable={false} />
+      {/* A Flick sits in its own 9:16 box at the top of the screen; its poster has to sit in the same place. */}
+      <img src={adjacent.image} alt="" className={`h-full w-full ${adjacent.flick ? "bg-fb-elev object-contain object-top" : "object-cover"}`} draggable={false} />
       <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-fb-video/50 to-transparent" />
       <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-fb-video/70 to-transparent" />
       <div className="absolute inset-x-2 top-2 h-[2px] rounded bg-fb-onvideo/35" />
