@@ -244,13 +244,13 @@ export type ExploreTile =
 const tile = (id: string): ExploreTile => ({ kind: "photo", id, image: U(id, 400) });
 export const EXPLORE: ExploreTile[] = [
   // Block 1: large Flick left, two small tiles right. Block 2: two small tiles left, large Flick right.
-  { kind: "flick-live", id: "x-rogers", flick: FEED_AD_3 },
+  { kind: "flick-live", id: "x-aveeno", flick: AVEENO_AD },
   tile("photo-1506744038136-46273834b3fb"), tile("photo-1517248135467-4c7edcad34c4"),
   tile("photo-1507525428034-b723cf961d3e"), { kind: "flick-live", id: "x-coach", flick: COACH_AD, side: "right" }, tile("photo-1495474472287-4d71bcdd2085"),
   // Two full rows of organic tiles, then block 3: large Aveeno Flick left, two small tiles right.
   tile("photo-1534438327276-14e5300c3a48"), tile("photo-1514525253161-7a46d19cd819"), tile("photo-1543466835-00a7907e9de1"),
   tile("photo-1549298916-b41d501d3772"), tile("photo-1533105079780-92b9be482077"), tile("photo-1494790108377-be9c29b29330"),
-  { kind: "flick-live", id: "x-aveeno", flick: AVEENO_AD },
+  { kind: "flick-live", id: "x-rogers", flick: FEED_AD_3 },
   tile("photo-1554118811-1e0d58224f24"), tile("photo-1542291026-7eec264c27ff"),
   tile("photo-1460353581641-37baddab0fa2"), tile("photo-1494976388531-d1058494cdd8"), tile("photo-1517694712202-14dd9538aa97"),
 ];
