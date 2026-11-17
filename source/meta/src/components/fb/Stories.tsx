@@ -138,7 +138,8 @@ export function StoryViewer({ story, onClose, onChange }: { story: Story; onClos
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-fb-video/70 to-transparent" />
       <div className="pointer-events-none absolute inset-x-2 top-2 h-[2px] overflow-hidden rounded bg-fb-onvideo/35"><div className="h-full bg-fb-onvideo" style={{ animation: `fb-progress ${dur}ms linear infinite` }} /></div>
       <StoryHeader story={story} onClose={onClose} />
-      <Button variant="ghost" aria-label="Previous story" onClick={() => move(-1)} className="absolute left-0 top-[45%] h-14 w-6 p-0 text-fb-onvideo/70 hover:bg-fb-onvideo/10">‹</Button>
+      {/* On a Flick the left arrow would sit on the thumbnail column; taps and swipes already move between stories. */}
+      {!ad && <Button variant="ghost" aria-label="Previous story" onClick={() => move(-1)} className="absolute left-0 top-[45%] h-14 w-6 p-0 text-fb-onvideo/70 hover:bg-fb-onvideo/10">‹</Button>}
       <Button variant="ghost" aria-label="Next story" onClick={() => move(1)} className="absolute right-0 top-[45%] h-14 w-6 p-0 text-fb-onvideo/70 hover:bg-fb-onvideo/10">›</Button>
       {ad && <div className="pointer-events-none absolute inset-x-3 bottom-4"><FlickCta flick={ad} className="pointer-events-auto h-11 w-full rounded-full bg-fb-card text-fb-fg hover:bg-fb-elev" /></div>}
       {!ad && <div className="absolute inset-x-3 bottom-4 flex items-center gap-3"><div className="flex-1 rounded-full border border-fb-onvideo/60 px-4 py-2.5 text-[14px] text-fb-onvideo/80">Send message</div></div>}
