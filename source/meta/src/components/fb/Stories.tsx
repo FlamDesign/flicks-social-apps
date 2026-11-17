@@ -131,7 +131,8 @@ export function StoryViewer({ story, onClose, onChange }: { story: Story; onClos
       {!adjacent.flick && <div className="absolute inset-x-3 bottom-4 flex items-center gap-3"><div className="flex-1 rounded-full border border-fb-onvideo/60 px-4 py-2.5 text-[14px] text-fb-onvideo/80">Send message</div></div>}
     </div>}
     <div data-story-face className={`story-face absolute inset-0 overflow-hidden ${settling ? "story-settling" : ""}`} style={{ transformOrigin: progress < 0 ? "right center" : "left center", transform: `translateX(${progress * 100}%) rotateY(${progress * 90}deg)` }}>
-      {ad ? <FlickEmbed id={ad.flickId} aspect={ad.aspect} fill surface="story" priority={10} onEvent={onPlayerEvent} poster={story.image} /> : <img src={story.image} alt="" draggable={false} className="h-full w-full object-cover" />}
+      {/* The "reel" surface stacks the Flick's thumbnails in a column on the left, as in the Instagram story. */}
+      {ad ? <FlickEmbed id={ad.flickId} aspect={ad.aspect} fill surface="reel" priority={10} onEvent={onPlayerEvent} poster={story.image} /> : <img src={story.image} alt="" draggable={false} className="h-full w-full object-cover" />}
       {ad && <div aria-hidden data-story-gestures className="absolute inset-0" />}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-fb-video/50 to-transparent" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-fb-video/70 to-transparent" />
