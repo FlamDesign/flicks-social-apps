@@ -18,6 +18,7 @@
       const u = G.clip(carId, e, m.id);
       if (await exists(u)) await fetchClip(u);
     }
+    if (token === preloadToken && cfg) warmNeighbours();
     for (const c of G.cars) if (c.id !== carId) {   // then the other vehicles on this road, so car switches are instant too
       if (token !== preloadToken) return;
       const u = G.clip(c.id, envFirst, 'stock'); if (await exists(u)) await fetchClip(u);
@@ -25,7 +26,7 @@
   }
   const resolveClip = async (car, env, mod) => {
     const tries = [G.clip(car, env, mod), G.clip(car, env, 'stock'), G.clip(car, 'lake', 'stock')];
-    for (const u of tries) if (await exists(u)) return { url: blobs[u] || u, exact: u === tries[0] };
+    for (const u of tries) if (await exists(u)) return { url: u, exact: u === tries[0] };
     return { url: window.MEDIA_FALLBACK, exact: false };
   };
   const carById = (id) => G.cars.find((c) => c.id === id);
@@ -52,10 +53,10 @@
       const c = car.colors[hookState.color]; hook.setColor(c.hex, { spec: c.spec ?? 1 }); label(c.name);
     } else if (beat === 'env') {
       hookState.env = (hookState.env + 1) % G.envs.length; hookState.mod = 'stock';
-      resolveClip(car.id, G.envs[hookState.env].id, 'stock').then(({ url }) => hook.load(url, { sync: true })); label(G.envs[hookState.env].name);
+      resolveClip(car.id, G.envs[hookState.env].id, 'stock').then(({ url }) => hook.load(url, { sync: true }).then(() => hook.warm([]))); label(G.envs[hookState.env].name);
     } else if (beat === 'mod') {
       const m = car.mods[1]; hookState.mod = m.id;
-      resolveClip(car.id, G.envs[hookState.env].id, m.id).then(({ url }) => hook.load(url, { sync: true })); label(m.name);
+      resolveClip(car.id, G.envs[hookState.env].id, m.id).then(({ url }) => hook.load(url, { sync: true }).then(() => hook.warm([]))); label(m.name);
     } else {
       hookState.car = (hookState.car + 1) % G.cars.length; hookState.color = 0; hookState.mod = 'stock';
       const nc = G.cars[hookState.car];
@@ -77,9 +78,19 @@
   function ensureCfg() { if (!cfg) cfg = new PaintPlayer($('cfgCanvas'), { focusY: 0.46 }); return cfg; }
 
   async function applyClip() {
+    const t0 = performance.now();
     const { url, exact } = await resolveClip(st.car, st.env, st.mod);
     await ensureCfg().load(url, { sync: true });
+    (window.__gmSwitchMs = window.__gmSwitchMs || []).push(Math.round(performance.now() - t0));
+    warmNeighbours();
     $('pv').classList.toggle('pending', !exact);
+  }
+  // Keep every package on this road and this package on every road playing in sync, so the next tap is instant.
+  async function warmNeighbours() {
+    const car = carById(st.car), urls = [];
+    for (const m of car.mods) { const u = G.clip(st.car, st.env, m.id); if (await exists(u)) urls.push(u); }
+    for (const e of G.envs) { const u = G.clip(st.car, e.id, st.mod); if (await exists(u)) urls.push(u); }
+    ensureCfg().warm([...new Set(urls)]);
   }
   function applyColor(animate) {
     const c = carById(st.car).colors[st.color];

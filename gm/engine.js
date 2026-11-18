@@ -53,33 +53,56 @@
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array([0,0,0])); return t; });
       gl.uniform1i(this.u.tA, 0); gl.uniform1i(this.u.tB, 1);
-      this.v = [0,1].map(() => { const v = document.createElement('video'); v.muted = true; v.loop = true; v.playsInline = true; v.setAttribute('playsinline',''); v.setAttribute('webkit-playsinline',''); v.preload = 'auto'; v.crossOrigin = 'anonymous'; return v; });
-      this.cur = 0; this.mixT = 1; this.mixing = false;
+      this.pool = new Map();          // url -> video element kept playing in sync (hot switching)
+      this.curV = null; this.prevV = null;
+      this.mixT = 1; this.mixing = false;
       this.colFrom = this.colTo = hex('#888888'); this.wipe = 2; this.sweepOn = 0;
-      this.ready = [false,false];
       this.raf = this.raf.bind(this); requestAnimationFrame(this.raf);
       new ResizeObserver(() => this.fit()).observe(canvas); this.fit();
+      setInterval(() => this.resync(), 250);
     }
     fit() { const r = this.c.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2);
       this.c.width = Math.max(2, Math.round(r.width*dpr)); this.c.height = Math.max(2, Math.round(r.height*dpr)); this.view = r.width / Math.max(1, r.height); }
-    crop() { // cover-fit the 9:16 source into the canvas, keeping focusY in view
+    crop() {
       const src = this.aspect, dst = this.view || src; let sx = 1, sy = 1;
       if (dst > src) sy = src/dst; else sx = dst/src;
       const ox = (1-sx)/2, oy = Math.min(Math.max(this.focusY - sy/2, 0), 1-sy);
       return [ox, 1-oy-sy, sx, sy];
     }
+    video(url) {                     // get or create a muted looping video for url
+      let v = this.pool.get(url);
+      if (v) return v;
+      v = document.createElement('video'); v.muted = true; v.loop = true; v.playsInline = true; v.preload = 'auto';
+      v.setAttribute('playsinline',''); v.setAttribute('webkit-playsinline','');
+      if (!url.startsWith('blob:')) v.crossOrigin = 'anonymous';
+      v.src = url; v.load(); this.pool.set(url, v);
+      v.addEventListener('loadeddata', () => { if (this.curV && v !== this.curV) v.currentTime = this.curV.currentTime; v.play().catch(() => {}); }, { once: true });
+      return v;
+    }
+    warm(urls) {                     // keep exactly these (plus the current one) hot; release the rest
+      const keep = new Set(urls); if (this.curV) keep.add(this.curV.src);
+      urls.forEach((u) => this.video(u));
+      for (const [u, v] of this.pool) if (!keep.has(u) && v !== this.curV && v !== this.prevV && !keep.has(v.src)) { v.pause(); v.removeAttribute('src'); v.load(); this.pool.delete(u); }
+    }
+    resync() {                       // hold every hot clip on the visible clip's clock
+      if (!this.curV || this.curV.readyState < 2) return;
+      const t = this.curV.currentTime;
+      for (const v of this.pool.values()) if (v !== this.curV && v.readyState >= 2) {
+        if (v.paused) v.play().catch(() => {});
+        const d = Math.abs(v.currentTime - t); if (d > 0.08 && d < (v.duration || 99) - 0.2) v.currentTime = t;
+      }
+    }
     load(url, { sync = true } = {}) {
-      const nxt = 1 - this.cur, v = this.v[nxt], cv = this.v[this.cur];
-      if (this.ready[this.cur] && (cv.src === url || cv.src.endsWith(url))) return Promise.resolve();
-      this.ready[nxt] = false;
+      const v = this.video(url);
+      if (v === this.curV) return Promise.resolve();
       return new Promise((res) => {
-        const go = () => {
-          v.removeEventListener('loadeddata', go);
-          const t = sync && this.ready[this.cur] ? (cv.currentTime + 0.12) % (v.duration || 1e9) : 0;
-          const start = () => { v.removeEventListener('seeked', start); v.play().catch(() => {}); this.ready[nxt] = true; this.cur = nxt; this.mixT = 0; this.mixing = true; res(); };
-          if (t > 0) { v.addEventListener('seeked', start); v.currentTime = t; } else start();
+        const show = () => {
+          if (sync && this.curV && Math.abs(v.currentTime - this.curV.currentTime) > 0.08) v.currentTime = this.curV.currentTime;
+          v.play().catch(() => {});
+          this.prevV = this.curV; this.curV = v; this.mixT = this.prevV ? 0 : 1; this.mixing = !!this.prevV; res();
         };
-        v.addEventListener('loadeddata', go); if (url.startsWith('blob:')) v.removeAttribute('crossorigin'); else v.crossOrigin = 'anonymous'; v.src = url; v.load();
+        if (v.readyState >= 3) show();                       // hot: instant
+        else v.addEventListener('canplay', show, { once: true });
       });
     }
     setColor(h, { animate = true, spec = 1 } = {}) {
@@ -87,22 +110,21 @@
       if (!animate) { this.colFrom = this.colTo = c; this.wipe = 2; return; }
       this.colFrom = this.colTo; this.colTo = c; this.wipe = -0.15; this.sweepOn = 1;
     }
-    play() { this.v.forEach((v, i) => { if (this.ready[i] && i === this.cur) v.play().catch(() => {}); }); }
-    pause() { this.v.forEach((v) => v.pause()); }
+    play() { for (const v of this.pool.values()) v.play().catch(() => {}); }
+    pause() { for (const v of this.pool.values()) v.pause(); }
     raf(ts) {
       const gl = this.gl, dt = this.last ? Math.min((ts - this.last)/1000, 0.05) : 0.016; this.last = ts;
-      if (this.mixing) { this.mixT = Math.min(1, this.mixT + dt/0.28); if (this.mixT >= 1) { this.mixing = false; this.v[1-this.cur].pause(); } }
+      if (this.mixing) { this.mixT = Math.min(1, this.mixT + dt/0.25); if (this.mixT >= 1) { this.mixing = false; this.prevV = null; } }
       if (this.wipe < 1.2) { this.wipe += dt/0.9; if (this.wipe >= 1.2) { this.sweepOn = 0; this.colFrom = this.colTo; } }
-      const a = 1 - this.cur, b = this.cur; // tA = previous, tB = current
-      [[0,a],[1,b]].forEach(([unit, idx]) => { const v = this.v[idx];
-        if (this.ready[idx] && v.readyState >= 2 && (idx === b || this.mixing)) { gl.activeTexture(gl.TEXTURE0+unit); gl.bindTexture(gl.TEXTURE_2D, this.tex[unit]); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, v); } });
+      [[0, this.mixing ? this.prevV : null], [1, this.curV]].forEach(([unit, v]) => {
+        if (v && v.readyState >= 2) { gl.activeTexture(gl.TEXTURE0+unit); gl.bindTexture(gl.TEXTURE_2D, this.tex[unit]); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, v); } });
       gl.viewport(0, 0, this.c.width, this.c.height);
       gl.uniform1f(this.u.mixAB, this.mixing ? this.mixT : 1);
       gl.uniform1f(this.u.wipe, this.wipe); gl.uniform1f(this.u.sweepOn, this.sweepOn);
       gl.uniform4fv(this.u.colFrom, this.colFrom); gl.uniform4fv(this.u.colTo, this.colTo);
-      gl.uniform4fv(this.u.crop, this.crop()); const vw = this.v[this.cur].videoWidth || 720, vh = this.v[this.cur].videoHeight || 1280; gl.uniform2f(this.u.px, 1/vw, 1/vh);
+      gl.uniform4fv(this.u.crop, this.crop()); const vw = (this.curV && this.curV.videoWidth) || 720, vh = (this.curV && this.curV.videoHeight) || 1280; gl.uniform2f(this.u.px, 1/vw, 1/vh);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-      if (this.onFrame) this.onFrame(this.v[this.cur].currentTime);
+      if (this.onFrame && this.curV) this.onFrame(this.curV.currentTime);
       requestAnimationFrame(this.raf);
     }
   }
