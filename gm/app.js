@@ -4,9 +4,28 @@
   // media/manifest.json lists the files that exist, so missing clips never 404 in the console
   const manifest = fetch('media/manifest.json', { cache: 'no-cache' }).then((r) => r.json()).catch(() => []);
   const exists = (url) => manifest.then((list) => list.includes(url.replace(/^media\//, '')));
+  const blobs = {};          // clip url -> object URL in memory
+  const inflight = {};
+  const fetchClip = (u) => blobs[u] ? Promise.resolve(blobs[u]) : (inflight[u] = inflight[u] || fetch(u).then((r) => r.blob()).then((b) => (blobs[u] = URL.createObjectURL(b))).catch(() => u));
+  let preloadToken = 0;
+  window.__gmCached = () => Object.keys(blobs).length;
+  async function preloadCar(carId, envFirst) {
+    const token = ++preloadToken;
+    const car = G.cars.find((c) => c.id === carId);
+    const envs = [envFirst, ...G.envs.map((e) => e.id).filter((e) => e !== envFirst)];
+    for (const e of envs) for (const m of car.mods) {
+      if (token !== preloadToken) return;            // a newer car was picked: preload that one instead
+      const u = G.clip(carId, e, m.id);
+      if (await exists(u)) await fetchClip(u);
+    }
+    for (const c of G.cars) if (c.id !== carId) {   // then the other vehicles on this road, so car switches are instant too
+      if (token !== preloadToken) return;
+      const u = G.clip(c.id, envFirst, 'stock'); if (await exists(u)) await fetchClip(u);
+    }
+  }
   const resolveClip = async (car, env, mod) => {
     const tries = [G.clip(car, env, mod), G.clip(car, env, 'stock'), G.clip(car, 'lake', 'stock')];
-    for (const u of tries) if (await exists(u)) return { url: u, exact: u === tries[0] };
+    for (const u of tries) if (await exists(u)) return { url: blobs[u] || u, exact: u === tries[0] };
     return { url: window.MEDIA_FALLBACK, exact: false };
   };
   const carById = (id) => G.cars.find((c) => c.id === id);
@@ -73,7 +92,7 @@
       const b = document.createElement('button'); b.className = 'car' + (c.id === st.car ? ' on' : ''); b.setAttribute('role', 'tab');
       b.setAttribute('aria-selected', c.id === st.car); b.setAttribute('aria-label', c.name);
       exists(c.thumb).then((ok) => { if (ok) { b.style.backgroundImage = `url(${c.thumb})`; b.classList.add('img'); } }); b.dataset.initial = c.short[0];
-      b.onclick = () => { if (st.car === c.id) return; st.car = c.id; st.color = 0; st.mod = 'stock'; renderAll(); applyClip(); applyColor(false); };
+      b.onclick = () => { if (st.car === c.id) return; st.car = c.id; st.color = 0; st.mod = 'stock'; renderAll(); applyClip(); applyColor(false); preloadCar(st.car, st.env); };
       $('cars').appendChild(b);
     });
     const car = carById(st.car); $('carName').textContent = `${car.year} ${car.name}`;
@@ -117,7 +136,7 @@
     let p = 0; const bar = $('loadBar');
     const prog = setInterval(() => { p = Math.min(96, p + 7 + Math.random() * 9); bar.style.width = p + '%'; $('loadPct').textContent = `Loading, ${Math.round(p)}% complete`; }, 90);
     renderAll(); $('pv').hidden = false; $('pv').classList.add('behind');
-    ensureCfg(); await applyClip(); applyColor(false);
+    ensureCfg(); await applyClip(); applyColor(false); preloadCar(st.car, st.env);
     // warm the cache for this car's other clips
     G.envs.forEach((e) => carById(st.car).mods.forEach((m) => exists(G.clip(st.car, e.id, m.id))));
     await new Promise((r) => setTimeout(r, 900));

@@ -70,7 +70,7 @@
     }
     load(url, { sync = true } = {}) {
       const nxt = 1 - this.cur, v = this.v[nxt], cv = this.v[this.cur];
-      if (this.ready[this.cur] && cv.src.endsWith(url)) return Promise.resolve();
+      if (this.ready[this.cur] && (cv.src === url || cv.src.endsWith(url))) return Promise.resolve();
       this.ready[nxt] = false;
       return new Promise((res) => {
         const go = () => {
@@ -79,7 +79,7 @@
           const start = () => { v.removeEventListener('seeked', start); v.play().catch(() => {}); this.ready[nxt] = true; this.cur = nxt; this.mixT = 0; this.mixing = true; res(); };
           if (t > 0) { v.addEventListener('seeked', start); v.currentTime = t; } else start();
         };
-        v.addEventListener('loadeddata', go); v.src = url; v.load();
+        v.addEventListener('loadeddata', go); if (url.startsWith('blob:')) v.removeAttribute('crossorigin'); else v.crossOrigin = 'anonymous'; v.src = url; v.load();
       });
     }
     setColor(h, { animate = true, spec = 1 } = {}) {
