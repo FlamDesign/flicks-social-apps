@@ -107,3 +107,4 @@ svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width:
 
 .av-brand.logo { background: #fff; padding: 5px 7px; width: 74px; border-radius: 8px; }
 .av-brand.logo img { width: 100%; height: 100%; object-fit: contain; }
+.pv-brand > div:last-child { min-width: 0; }
