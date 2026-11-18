@@ -4,6 +4,7 @@ Phone mock-ups showing Flam's Flicks (interactive video ads) inside social apps.
 
 - `instagram/` is the Instagram demo, served at `/instagram/`
 - `meta/` is the Facebook, Messenger and Marketplace demo, served at `/meta/`
+- `gm/` is the GM configurator Flick on Facebook, served at `/gm/`. Plain static files, no build step. Clips are generated in a magenta key paint and recoloured live in WebGL (`gm/engine.js`); run `gm/media/build-manifest.sh` after adding clips.
 
 Those folders hold the built sites that GitHub Pages serves. `source/<app>/` holds the project each one is built from: run `npm install` and `npm run build` there, then copy its `dist/` over the matching top-level folder.
 
