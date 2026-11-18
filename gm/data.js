@@ -11,7 +11,7 @@ window.GM = {
   cars: [
     {
       id: 'sierra', name: 'GMC Sierra 1500', short: 'Sierra 1500', year: 2027,
-      thumb: 'media/car_sierra.jpg', cta: 'https://www.gmc.com/trucks/sierra/1500',
+      thumb: 'media/car_sierra.jpg', logo: 'media/logo_gmc.png', cta: 'https://www.gmc.com/trucks/sierra/1500',
       colors: [
         { name: 'Summit White', hex: '#f1f1ed' },
         { name: 'Onyx Black', hex: '#0c0c0e' },
@@ -23,9 +23,9 @@ window.GM = {
       ],
       mods: [
         { id: 'stock', name: 'Stock' },
-        { id: 'at4x', name: 'AT4X kit' },
-        { id: 'aev', name: 'AEV Edition' },
-        { id: 'denali', name: 'Denali' },
+        { id: 'at4x', name: 'AT4X kit' },      // 2" lift, 35" MT tires, AT4X hood and fascia
+        { id: 'aev', name: 'AEV Edition' },    // AEV steel bumpers, 18" Salta wheels, rocker protection
+        { id: 'denali', name: 'Denali' },      // Denali chrome grille
       ],
     },
     {
@@ -50,7 +50,7 @@ window.GM = {
     },
     {
       id: 'hummer', name: 'GMC HUMMER EV SUV', short: 'HUMMER EV SUV', year: 2027,
-      thumb: 'media/car_hummer.jpg', cta: 'https://www.gmc.com/electric/hummer-ev/suv',
+      thumb: 'media/car_hummer.jpg', logo: 'media/logo_gmc.png', cta: 'https://www.gmc.com/electric/hummer-ev/suv',
       colors: [
         { name: 'ICON', hex: '#f1c000' },
         { name: 'Dark Ridge', hex: '#4b4e52' },
@@ -60,9 +60,9 @@ window.GM = {
       ],
       mods: [
         { id: 'stock', name: 'Stock' },
-        { id: 'wheels22', name: '22" wheels' },
-        { id: 'offroad', name: 'Off-road kit' },
-        { id: 'icon', name: 'ICON | 25' },
+        { id: 'offroad', name: 'Extreme Off-Road' }, // 18" black wheels, 35" MT tires, underbody armor, rock sliders
+        { id: 'wheels22', name: 'New 22" wheels' },  // 2027 22-inch wheel design
+        { id: 'icon', name: 'ICON | 25 look' },     // Deep Void 22" wheels and black trim (paint stays your pick)
       ],
     },
   ],
