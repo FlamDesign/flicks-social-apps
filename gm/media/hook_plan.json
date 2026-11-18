@@ -29,31 +29,31 @@
  },
  {
   "car": "corvette",
-  "env": "coast",
+  "env": "desert",
   "mod": "stock",
   "col": "#f2c200",
   "label": "Corvette Grand Sport \u00b7 Competition Yellow"
  },
  {
   "car": "corvette",
-  "env": "coast",
-  "mod": "stripes",
+  "env": "desert",
+  "mod": "carbon",
   "col": "#f2c200",
-  "label": "Corvette Grand Sport \u00b7 Racing stripes"
+  "label": "Corvette Grand Sport \u00b7 Carbon hood & roof"
  },
  {
   "car": "corvette",
-  "env": "coast",
-  "mod": "stripes",
+  "env": "desert",
+  "mod": "bronze",
   "col": "#df561a",
-  "label": "Corvette Grand Sport \u00b7 Sebring Orange"
+  "label": "Corvette Grand Sport \u00b7 Bronze wheels"
  },
  {
   "car": "corvette",
   "env": "lake",
   "mod": "stripes",
   "col": "#df561a",
-  "label": "Corvette Grand Sport \u00b7 Mountain lake"
+  "label": "Corvette Grand Sport \u00b7 Racing stripes"
  },
  {
   "car": "hummer",
@@ -64,23 +64,23 @@
  },
  {
   "car": "hummer",
-  "env": "lake",
+  "env": "desert",
   "mod": "kayaks",
   "col": "#f1c000",
   "label": "HUMMER EV SUV \u00b7 Kayak rack"
  },
  {
   "car": "hummer",
-  "env": "lake",
-  "mod": "kayaks",
+  "env": "coast",
+  "mod": "rooftent",
   "col": "#1e3d6a",
-  "label": "HUMMER EV SUV \u00b7 Azurite Blue"
+  "label": "HUMMER EV SUV \u00b7 Rooftop tent"
  },
  {
   "car": "hummer",
   "env": "coast",
-  "mod": "stock",
-  "col": "#1e3d6a",
-  "label": "HUMMER EV SUV \u00b7 Coast road"
+  "mod": "rooftent",
+  "col": "#5b2b22",
+  "label": "HUMMER EV SUV \u00b7 Dark Ember"
  }
 ]

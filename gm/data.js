@@ -43,8 +43,8 @@ window.GM = {
       ],
       mods: [
         { id: 'stock', name: 'Stock' },
-        { id: 'aero', name: 'Carbon Aero' },
-        { id: 'wheels', name: 'Carbon wheels' },
+        { id: 'bronze', name: 'Bronze wheels' },          // satin bronze forged wheels
+        { id: 'carbon', name: 'Carbon hood & roof' },      // exposed carbon hood, roof and mirror caps
         { id: 'stripes', name: 'Racing stripes' },
       ],
     },
