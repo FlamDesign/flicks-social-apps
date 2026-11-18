@@ -25,7 +25,7 @@ svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width:
 .composer-in { flex: 1; border: 1px solid var(--fb-sep); border-radius: 20px; padding: 9px 14px; color: var(--fb-muted); font-size: 15px; }
 .composer-ic { color: #45bd62; }
 .av { width: 40px; height: 40px; border-radius: 50%; flex: none; }
-.av-me { background: linear-gradient(135deg, #a78bfa, #4c1d95); }
+.av-me { background: url(media/feed_me_av.jpg) center/cover; }
 .av-brand { background: #0b2d6b; color: #fff; font-weight: 700; font-size: 14px; display: grid; place-items: center; letter-spacing: .3px; }
 .av-brand.sm { width: 36px; height: 36px; font-size: 12px; border-radius: 9px; }
 
@@ -39,11 +39,13 @@ svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width:
 .post-t { margin: 0 12px 10px; font-size: 15px; line-height: 20px; }
 .post-photo { width: 100%; aspect-ratio: 4/5; background-size: cover; background-position: center; }
 .organic-1 { background-image: url(media/feed_maya.jpg); }
-.organic-2 { aspect-ratio: 1/1; background-image: linear-gradient(180deg, #9cc6e8 0%, #f7d8a8 45%, #2c6c8f 60%, #1b3b4f 100%); }
+.organic-2 { background-image: url(media/feed_dev.jpg); }
 .reacts { display: flex; justify-content: space-between; padding: 10px 12px; font-size: 13px; color: var(--fb-muted); }
 .reacts span:first-child { display: flex; align-items: center; gap: 4px; }
-.r-like, .r-heart { width: 18px; height: 18px; border-radius: 50%; display: inline-block; border: 2px solid #fff; margin-right: -6px; }
-.r-like { background: var(--fb-blue); } .r-heart { background: #f33e58; }
+.r-like, .r-heart { width: 18px; height: 18px; border-radius: 50%; display: inline-block; border: 2px solid #fff; margin-right: -6px; vertical-align: -4px; }
+.reacts .r-heart { margin-right: 6px; }
+.r-like { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23fff' d='M4.2 7H2.6c-.3 0-.6.3-.6.6v5.8c0 .3.3.6.6.6h1.6V7zm1.2 7h5.3c.8 0 1.4-.5 1.6-1.2l1-4.1c.2-.9-.5-1.7-1.4-1.7H9.4l.4-2.1c.1-.7-.2-1.4-.8-1.7-.3-.1-.6.1-.7.4L6.6 6.8c-.8.6-1.2 1-1.2 1.8V14z'/%3E%3C/svg%3E") center/12px no-repeat, linear-gradient(#18afff, #0062df); } .r-heart { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23fff' d='M8 13.6S2.4 10.3 2.4 6.4C2.4 4.7 3.7 3.4 5.3 3.4c1.1 0 2.1.6 2.7 1.5.6-.9 1.6-1.5 2.7-1.5 1.6 0 2.9 1.3 2.9 3 0 3.9-5.6 7.2-5.6 7.2z'/%3E%3C/svg%3E") center/12px no-repeat, linear-gradient(#ff6680, #e61739); }
+.reacts .r-heart { position: relative; z-index: 0; } .reacts .r-like { position: relative; z-index: 1; }
 .acts { display: flex; margin: 0 12px; border-top: 1px solid var(--fb-sep); }
 .acts span { flex: 1; text-align: center; padding: 10px 0; font-size: 13px; font-weight: 600; color: var(--fb-muted); }
 .feed-end { height: 40px; }
