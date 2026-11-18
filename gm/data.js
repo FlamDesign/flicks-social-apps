@@ -60,9 +60,9 @@ window.GM = {
       ],
       mods: [
         { id: 'stock', name: 'Stock' },
-        { id: 'offroad', name: 'Extreme Off-Road' }, // 18" black wheels, 35" MT tires, underbody armor, rock sliders
-        { id: 'wheels22', name: 'New 22" wheels' },  // 2027 22-inch wheel design
-        { id: 'icon', name: 'ICON | 25 look' },     // Deep Void 22" wheels and black trim (paint stays your pick)
+        { id: 'kayaks', name: 'Kayak rack' },     // roof rack with two sea kayaks
+        { id: 'rooftent', name: 'Rooftop tent' }, // hard-shell rooftop tent and ladder
+        { id: 'big37', name: '37" tyres' },      // 37-inch all-terrain tyres, taller stance
       ],
     },
   ],
