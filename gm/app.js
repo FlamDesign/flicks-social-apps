@@ -1,100 +1,75 @@
 (function () {
   const $ = (id) => document.getElementById(id);
   const G = window.GM;
-  // media/manifest.json lists the files that exist, so missing clips never 404 in the console
-  const manifest = fetch('media/manifest.json', { cache: 'no-cache' }).then((r) => r.json()).catch(() => []);
-  const exists = (url) => manifest.then((list) => list.includes(url.replace(/^media\//, '')));
-  const blobs = {};          // clip url -> object URL in memory
-  const inflight = {};
-  const fetchClip = (u) => blobs[u] ? Promise.resolve(blobs[u]) : (inflight[u] = inflight[u] || fetch(u).then((r) => r.blob()).then((b) => (blobs[u] = URL.createObjectURL(b))).catch(() => u));
-  let preloadToken = 0;
-  window.__gmCached = () => Object.keys(blobs).length;
-  async function preloadCar(carId, envFirst) {
-    const token = ++preloadToken;
-    const car = G.cars.find((c) => c.id === carId);
-    const envs = [envFirst, ...G.envs.map((e) => e.id).filter((e) => e !== envFirst)];
-    for (const e of envs) for (const m of car.mods) {
-      if (token !== preloadToken) return;            // a newer car was picked: preload that one instead
-      const u = G.clip(carId, e, m.id);
-      if (await exists(u)) await fetchClip(u);
-    }
-    if (token === preloadToken && cfg) warmNeighbours();
-    for (const c of G.cars) if (c.id !== carId) {   // then the other vehicles on this road, so car switches are instant too
-      if (token !== preloadToken) return;
-      const u = G.clip(c.id, envFirst, 'stock'); if (await exists(u)) await fetchClip(u);
-    }
-  }
-  const resolveClip = async (car, env, mod) => {
-    const tries = [G.clip(car, env, mod), G.clip(car, env, 'stock'), G.clip(car, 'lake', 'stock')];
-    for (const u of tries) if (await exists(u)) return { url: u, exact: u === tries[0] };
-    return { url: window.MEDIA_FALLBACK, exact: false };
-  };
   const carById = (id) => G.cars.find((c) => c.id === id);
+
+  /* ---------- downloads: one grid video per vehicle, fetched whole into memory ---------- */
+  // While the feed hook plays, all three vehicles download (hook car first), so the configurator
+  // opens ready and every switch after that plays from memory.
+  const blobs = {}, inflight = {}, progress = {};
+  function fetchAtlas(carId) {
+    const url = G.atlas(carId);
+    if (blobs[carId]) return Promise.resolve(blobs[carId]);
+    return inflight[carId] = inflight[carId] || (async () => {
+      try {
+        const r = await fetch(url); if (!r.ok) throw new Error(r.status);
+        const total = +r.headers.get('content-length') || 0, rd = r.body.getReader(), parts = []; let got = 0;
+        for (;;) { const { done, value } = await rd.read(); if (done) break; parts.push(value); got += value.length; progress[carId] = total ? got/total : 0.5; }
+        progress[carId] = 1;
+        return (blobs[carId] = URL.createObjectURL(new Blob(parts, { type: 'video/mp4' })));
+      } catch (e) { console.warn('[gm] download failed, streaming instead:', url, e); progress[carId] = 1; return (blobs[carId] = url); }
+    })();
+  }
+  async function fetchAll(first) {
+    const order = [first, ...G.cars.map((c) => c.id).filter((c) => c !== first)];
+    for (const c of order) { const u = await fetchAtlas(c); if (cfg) cfg.preload(u); }
+  }
+  window.__gmProgress = () => ({ ...progress });
 
   /* ---------- feed hook ---------- */
   const hook = new PaintPlayer($('hookCanvas'), { focusY: 0.42 });
-  const hookState = { car: 0, color: 0, env: 0, mod: 'stock', step: 0, on: false, timer: 0 };
-  async function hookShow() {
-    const car = G.cars[hookState.car], env = G.envs[hookState.env];
-    const { url } = await resolveClip(car.id, env.id, 'stock');
-    await hook.load(url, { sync: false });
-    const c = car.colors[hookState.color]; hook.setColor(c.hex, { animate: false, spec: c.spec ?? 1 });
-    $('hookKicker').textContent = car.short;
+  const hookState = { car: 0, color: 0, env: 0, mod: 0, step: 0, on: false, timer: 0 };
+  const hookPaint = () => { const c = G.cars[hookState.car].colors[hookState.color]; return [c.hex, c.spec ?? 1]; };
+  async function hookShow(animate) {
+    const car = G.cars[hookState.car], src = await fetchAtlas(car.id);
+    const [hex, spec] = hookPaint();
+    hook.show(src, G.cell(car.id, G.envs[hookState.env].id, car.mods[hookState.mod].id), hex, { spec, animate });
   }
-  // Hook beats per car: paint, paint, road change, package, then the next car. One continuous feel, no hard cuts.
-  const hookBeats = ['color', 'color', 'env', 'mod', 'car'];
+  const hookBeats = ['color', 'mod', 'env', 'color', 'car'];
   function hookTick() {
     if (!hookState.on) return;
-    const car = G.cars[hookState.car];
-    const beat = hookBeats[hookState.step % hookBeats.length]; hookState.step++;
-    const label = (txt) => { $('hookKicker').textContent = `${car.short} · ${txt}`; };
-    if (beat === 'color') {
-      hookState.color = (hookState.color + 1) % car.colors.length;
-      const c = car.colors[hookState.color]; hook.setColor(c.hex, { spec: c.spec ?? 1 }); label(c.name);
-    } else if (beat === 'env') {
-      hookState.env = (hookState.env + 1) % G.envs.length; hookState.mod = 'stock';
-      resolveClip(car.id, G.envs[hookState.env].id, 'stock').then(({ url }) => hook.load(url, { sync: true }).then(() => hook.warm([]))); label(G.envs[hookState.env].name);
-    } else if (beat === 'mod') {
-      const m = car.mods[1]; hookState.mod = m.id;
-      resolveClip(car.id, G.envs[hookState.env].id, m.id).then(({ url }) => hook.load(url, { sync: true }).then(() => hook.warm([]))); label(m.name);
-    } else {
-      hookState.car = (hookState.car + 1) % G.cars.length; hookState.color = 0; hookState.mod = 'stock';
-      const nc = G.cars[hookState.car];
-      resolveClip(nc.id, G.envs[hookState.env].id, 'stock').then(({ url }) => hook.load(url, { sync: true }).then(() => {
-        const c = nc.colors[0]; hook.setColor(c.hex, { animate: false, spec: c.spec ?? 1 }); $('hookKicker').textContent = nc.short; }));
-    }
-    hookState.timer = setTimeout(hookTick, beat === 'car' ? 2200 : 1900);
+    const beat = hookBeats[hookState.step++ % hookBeats.length];
+    let car = G.cars[hookState.car], label;
+    if (beat === 'color') { hookState.color = (hookState.color + 1) % car.colors.length; label = car.colors[hookState.color].name; }
+    else if (beat === 'mod') { hookState.mod = hookState.mod ? 0 : 1 + (hookState.step % 3); label = car.mods[hookState.mod].name; }
+    else if (beat === 'env') { hookState.env = (hookState.env + 1) % G.envs.length; label = G.envs[hookState.env].name; }
+    else { hookState.car = (hookState.car + 1) % G.cars.length; hookState.color = 0; hookState.mod = 0; car = G.cars[hookState.car]; }
+    hookShow(true);
+    $('hookKicker').textContent = label ? `${car.short} · ${label}` : car.short;
+    hookState.timer = setTimeout(hookTick, 1700);
   }
   const io = new IntersectionObserver(([e]) => {
     const vis = e.isIntersecting && $('pv').hidden && $('loader').hidden;
-    if (vis && !hookState.on) { hookState.on = true; hook.play(); hookState.timer = setTimeout(hookTick, 1600); }
+    if (vis && !hookState.on) { hookState.on = true; hook.play(); hookState.timer = setTimeout(hookTick, 1500); }
     if (!vis && hookState.on) { hookState.on = false; clearTimeout(hookState.timer); hook.pause(); }
   }, { threshold: 0.4 });
-  hookShow().then(() => io.observe($('hook')));
+  $('hookKicker').textContent = G.cars[0].short;
+  hookShow(false).then(() => io.observe($('hook')));
+  fetchAll(G.cars[0].id);
 
   /* ---------- configurator ---------- */
   let cfg = null;
   const st = { car: 'sierra', color: 0, mod: 'stock', env: 'lake' };
-  function ensureCfg() { if (!cfg) cfg = new PaintPlayer($('cfgCanvas'), { focusY: 0.46 }); return cfg; }
-
-  async function applyClip() {
+  function ensureCfg() {
+    if (!cfg) { cfg = new PaintPlayer($('cfgCanvas'), { focusY: 0.46 }); Object.values(blobs).forEach((u) => cfg.preload(u)); }
+    return cfg;
+  }
+  // Every change (vehicle, paint, package, road) goes through here and plays the same light sweep.
+  async function apply(animate = true) {
     const t0 = performance.now();
-    const { url, exact } = await resolveClip(st.car, st.env, st.mod);
-    await ensureCfg().load(url, { sync: true });
+    const car = carById(st.car), c = car.colors[st.color], src = await fetchAtlas(st.car);
+    ensureCfg().show(src, G.cell(st.car, st.env, st.mod), c.hex, { spec: c.spec ?? 1, animate });
     (window.__gmSwitchMs = window.__gmSwitchMs || []).push(Math.round(performance.now() - t0));
-    warmNeighbours();
-    $('pv').classList.toggle('pending', !exact);
-  }
-  // Keep every package on this road and this package on every road playing in sync, so the next tap is instant.
-  async function warmNeighbours() {
-    const car = carById(st.car), urls = [];
-    for (const m of car.mods) { const u = G.clip(st.car, st.env, m.id); if (await exists(u)) urls.push(u); }
-    for (const e of G.envs) { const u = G.clip(st.car, e.id, st.mod); if (await exists(u)) urls.push(u); }
-    ensureCfg().warm([...new Set(urls)]);
-  }
-  function applyColor(animate) {
-    const c = carById(st.car).colors[st.color];
-    ensureCfg().setColor(c.hex, { animate, spec: c.spec ?? 1 });
     $('colName').textContent = c.name;
   }
   function renderCars() {
@@ -102,8 +77,8 @@
     G.cars.forEach((c) => {
       const b = document.createElement('button'); b.className = 'car' + (c.id === st.car ? ' on' : ''); b.setAttribute('role', 'tab');
       b.setAttribute('aria-selected', c.id === st.car); b.setAttribute('aria-label', c.name);
-      exists(c.thumb).then((ok) => { if (ok) { b.style.backgroundImage = `url(${c.thumb})`; b.classList.add('img'); } }); b.dataset.initial = c.short[0];
-      b.onclick = () => { if (st.car === c.id) return; st.car = c.id; st.color = 0; st.mod = 'stock'; renderAll(); applyClip(); applyColor(false); preloadCar(st.car, st.env); };
+      b.style.backgroundImage = `url(${c.thumb})`; b.classList.add('img'); b.dataset.initial = c.short[0];
+      b.onclick = () => { if (st.car === c.id) return; st.car = c.id; st.color = 0; st.mod = 'stock'; renderAll(); apply(); };
       $('cars').appendChild(b);
     });
     const car = carById(st.car); $('carName').textContent = `${car.year} ${car.name}`;
@@ -116,7 +91,7 @@
       const b = document.createElement('button'); b.className = 'dot' + (i === st.color ? ' on' : '');
       b.style.background = c.spec !== undefined && c.spec < 1 ? c.hex : `radial-gradient(circle at 35% 30%, #ffffff55, transparent 45%), ${c.hex}`;
       b.setAttribute('aria-label', c.name); b.title = c.name;
-      b.onclick = () => { if (st.color === i) return; st.color = i; renderColors(); applyColor(true); };
+      b.onclick = () => { if (st.color === i) return; st.color = i; renderColors(); apply(); };
       $('swatches').appendChild(b);
     });
   }
@@ -124,7 +99,7 @@
     const car = carById(st.car); $('mods').innerHTML = '';
     car.mods.forEach((m) => {
       const b = document.createElement('button'); b.className = 'chip' + (m.id === st.mod ? ' on' : ''); b.textContent = m.name;
-      b.onclick = () => { if (st.mod === m.id) return; st.mod = m.id; renderMods(); applyClip(); };
+      b.onclick = () => { if (st.mod === m.id) return; st.mod = m.id; renderMods(); apply(); };
       $('mods').appendChild(b);
     });
   }
@@ -132,8 +107,8 @@
     $('envs').innerHTML = '';
     G.envs.forEach((e) => {
       const b = document.createElement('button'); b.className = 'env env-' + e.id + (e.id === st.env ? ' on' : '');
-      exists(e.thumb).then((ok) => { if (ok) b.style.backgroundImage = `url(${e.thumb})`; }); b.setAttribute('aria-label', e.name); b.title = e.name;
-      b.onclick = () => { if (st.env === e.id) return; st.env = e.id; renderEnvs(); applyClip(); };
+      b.style.backgroundImage = `url(${e.thumb})`; b.setAttribute('aria-label', e.name); b.title = e.name;
+      b.onclick = () => { if (st.env === e.id) return; st.env = e.id; renderEnvs(); apply(); };
       $('envs').appendChild(b);
     });
   }
@@ -141,18 +116,17 @@
 
   async function open() {
     const fromCar = G.cars[hookState.car];
-    st.car = fromCar.id; st.color = hookState.color; st.mod = hookState.mod; st.env = G.envs[hookState.env].id;
+    st.car = fromCar.id; st.color = hookState.color; st.mod = fromCar.mods[hookState.mod].id; st.env = G.envs[hookState.env].id;
     hookState.on = false; clearTimeout(hookState.timer); hook.pause();
     $('loader').hidden = false; $('fb').setAttribute('aria-hidden', 'true');
-    let p = 0; const bar = $('loadBar');
-    const prog = setInterval(() => { p = Math.min(96, p + 7 + Math.random() * 9); bar.style.width = p + '%'; $('loadPct').textContent = `Loading, ${Math.round(p)}% complete`; }, 90);
+    const bar = $('loadBar'); let shown = 0;
+    // real progress of this vehicle's download (already done if the hook played long enough)
+    const prog = setInterval(() => { shown = Math.max(shown, Math.min(96, (progress[st.car] || 0) * 96)); bar.style.width = shown + '%'; $('loadPct').textContent = `Loading, ${Math.round(shown)}% complete`; }, 80);
     renderAll(); $('pv').hidden = false; $('pv').classList.add('behind');
-    ensureCfg(); await applyClip(); applyColor(false); preloadCar(st.car, st.env);
-    // warm the cache for this car's other clips
-    G.envs.forEach((e) => carById(st.car).mods.forEach((m) => exists(G.clip(st.car, e.id, m.id))));
-    await new Promise((r) => setTimeout(r, 900));
+    ensureCfg(); await fetchAtlas(st.car); await apply(false);
+    await new Promise((r) => { const v = cfg.preload(blobs[st.car]); if (v.readyState >= 3) r(); else v.addEventListener('canplay', r, { once: true }); });
     clearInterval(prog); bar.style.width = '100%'; $('loadPct').textContent = 'Loading, 100% complete';
-    setTimeout(() => { $('loader').hidden = true; $('pv').classList.remove('behind'); }, 220);
+    setTimeout(() => { $('loader').hidden = true; $('pv').classList.remove('behind'); }, 200);
   }
   function close() {
     $('pv').hidden = true; $('loader').hidden = true; $('fb').removeAttribute('aria-hidden'); if (cfg) cfg.pause();
