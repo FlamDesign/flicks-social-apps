@@ -18,7 +18,7 @@
     float spec = min(l.g, min(l.r, l.b));
     float rd = l.r - spec, bd = l.b - spec, mx = max(max(l.r, l.b), 1e-5);
     float sat = (mx - l.g)/mx, ratio = bd/max(rd, 1e-5);
-    float m = smoothstep(0.22, 0.45, sat) * smoothstep(0.012, 0.06, ratio) * (1.0 - smoothstep(1.3, 1.8, ratio)) * smoothstep(0.002, 0.008, mx);
+    float m = smoothstep(0.22, 0.45, sat) * smoothstep(0.012, 0.06, ratio) * (1.0 - smoothstep(2.6, 4.0, ratio)) * smoothstep(0.002, 0.008, mx);
     return vec3(m, spec, (rd + bd)/0.85);
   }
   void main(){
