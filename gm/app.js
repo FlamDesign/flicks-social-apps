@@ -51,10 +51,10 @@
     return cfg;
   }
   // Every change (vehicle, paint, package, road) goes through here and plays the same light sweep.
-  async function apply(animate = true) {
+  async function apply(animate = true, mode = 'car') {
     const t0 = performance.now();
     const car = carById(st.car), c = car.colors[st.color], src = await fetchAtlas(st.car);
-    ensureCfg().show(src, G.cell(st.car, st.env, st.mod), c.hex, { spec: c.spec ?? 1, animate });
+    ensureCfg().show(src, G.cell(st.car, st.env, st.mod), c.hex, { spec: c.spec ?? 1, animate, mode });
     (window.__gmSwitchMs = window.__gmSwitchMs || []).push(Math.round(performance.now() - t0));
     $('colName').textContent = c.name;
   }
@@ -94,7 +94,7 @@
     G.envs.forEach((e) => {
       const b = document.createElement('button'); b.className = 'env env-' + e.id + (e.id === st.env ? ' on' : '');
       b.style.backgroundImage = `url(${e.thumb})`; b.setAttribute('aria-label', e.name); b.title = e.name;
-      b.onclick = () => { if (st.env === e.id) return; st.env = e.id; renderEnvs(); apply(); };
+      b.onclick = () => { if (st.env === e.id) return; st.env = e.id; renderEnvs(); apply(true, 'road'); };
       $('envs').appendChild(b);
     });
   }
