@@ -26,36 +26,22 @@
   }
   window.__gmProgress = () => ({ ...progress });
 
-  /* ---------- feed hook ---------- */
-  const hook = new PaintPlayer($('hookCanvas'), { focusY: 0.42 });
-  const hookState = { car: 0, color: 0, env: 0, mod: 0, step: 0, on: false, timer: 0 };
-  const hookPaint = () => { const c = G.cars[hookState.car].colors[hookState.color]; return [c.hex, c.spec ?? 1]; };
-  async function hookShow(animate) {
-    const car = G.cars[hookState.car], src = await fetchAtlas(car.id);
-    const [hex, spec] = hookPaint();
-    hook.show(src, G.cell(car.id, G.envs[hookState.env].id, car.mods[hookState.mod].id), hex, { spec, animate });
-  }
-  const hookBeats = ['color', 'mod', 'env', 'color', 'car'];
-  function hookTick() {
-    if (!hookState.on) return;
-    const beat = hookBeats[hookState.step++ % hookBeats.length];
-    let car = G.cars[hookState.car], label;
-    if (beat === 'color') { hookState.color = (hookState.color + 1) % car.colors.length; label = car.colors[hookState.color].name; }
-    else if (beat === 'mod') { hookState.mod = hookState.mod ? 0 : 1 + (hookState.step % 3); label = car.mods[hookState.mod].name; }
-    else if (beat === 'env') { hookState.env = (hookState.env + 1) % G.envs.length; label = G.envs[hookState.env].name; }
-    else { hookState.car = (hookState.car + 1) % G.cars.length; hookState.color = 0; hookState.mod = 0; car = G.cars[hookState.car]; }
-    hookShow(true);
-    $('hookKicker').textContent = label ? `${car.short} · ${label}` : car.short;
-    hookState.timer = setTimeout(hookTick, 1700);
-  }
+  /* ---------- feed hook: a pre-cut film (media/hook.mp4), plays as a plain video ---------- */
+  const hv = $('hookVideo');
+  let beats = [];
+  fetch('media/hook.json').then((r) => r.json()).then((j) => { beats = j; }).catch(() => {});
+  const beatNow = () => { let b = beats[0]; for (const x of beats) if (x.t <= hv.currentTime + 0.25) b = x; return b; };
+  let lastLabel = '';
+  (function caption() {   // caption follows the film; the label changes as the sweep passes
+    const b = beatNow(); if (b && b.label !== lastLabel) { lastLabel = b.label; $('hookKicker').textContent = b.label; }
+    requestAnimationFrame(caption);
+  })();
   const io = new IntersectionObserver(([e]) => {
     const vis = e.isIntersecting && $('pv').hidden && $('loader').hidden;
-    if (vis && !hookState.on) { hookState.on = true; hook.play(); hookState.timer = setTimeout(hookTick, 1500); }
-    if (!vis && hookState.on) { hookState.on = false; clearTimeout(hookState.timer); hook.pause(); }
+    if (vis) hv.play().catch(() => {}); else hv.pause();
   }, { threshold: 0.4 });
-  $('hookKicker').textContent = G.cars[0].short;
-  hookShow(false).then(() => io.observe($('hook')));
-  fetchAll(G.cars[0].id);
+  io.observe($('hook'));
+  fetchAll('sierra');   // download all three vehicles while the film plays
 
   /* ---------- configurator ---------- */
   let cfg = null;
@@ -115,9 +101,12 @@
   function renderAll() { renderCars(); renderColors(); renderMods(); renderEnvs(); }
 
   async function open() {
-    const fromCar = G.cars[hookState.car];
-    st.car = fromCar.id; st.color = hookState.color; st.mod = fromCar.mods[hookState.mod].id; st.env = G.envs[hookState.env].id;
-    hookState.on = false; clearTimeout(hookState.timer); hook.pause();
+    // open on exactly what the film was showing when tapped
+    const b = beatNow() || { car: 'sierra', env: 'lake', mod: 'stock', col: '' };
+    const car = carById(b.car) ? b.car : 'sierra';
+    st.car = car; st.env = b.env; st.mod = carById(car).mods.some((m) => m.id === b.mod) ? b.mod : 'stock';
+    st.color = Math.max(0, carById(car).colors.findIndex((c) => c.hex.toLowerCase() === (b.col || '').toLowerCase()));
+    hv.pause();
     $('loader').hidden = false; $('fb').setAttribute('aria-hidden', 'true');
     const bar = $('loadBar'); let shown = 0;
     // real progress of this vehicle's download (already done if the hook played long enough)
