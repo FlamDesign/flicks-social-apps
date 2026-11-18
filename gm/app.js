@@ -13,7 +13,7 @@
 
   /* ---------- feed hook ---------- */
   const hook = new PaintPlayer($('hookCanvas'), { focusY: 0.42 });
-  const hookState = { car: 0, color: 0, env: 0, step: 0, on: false, timer: 0 };
+  const hookState = { car: 0, color: 0, env: 0, mod: 'stock', step: 0, on: false, timer: 0 };
   async function hookShow() {
     const car = G.cars[hookState.car], env = G.envs[hookState.env];
     const { url } = await resolveClip(car.id, env.id, 'stock');
@@ -21,21 +21,29 @@
     const c = car.colors[hookState.color]; hook.setColor(c.hex, { animate: false, spec: c.spec ?? 1 });
     $('hookKicker').textContent = car.short;
   }
+  // Hook beats per car: paint, paint, road change, package, then the next car. One continuous feel, no hard cuts.
+  const hookBeats = ['color', 'color', 'env', 'mod', 'car'];
   function hookTick() {
     if (!hookState.on) return;
     const car = G.cars[hookState.car];
-    hookState.step++;
-    if (hookState.step % 4 === 0) { // every 4th beat: next vehicle (or next road)
-      hookState.car = (hookState.car + 1) % G.cars.length; hookState.env = (hookState.env + 1) % G.envs.length; hookState.color = 0;
-      const nc = G.cars[hookState.car];
-      resolveClip(nc.id, G.envs[hookState.env].id, 'stock').then(({ url }) => hook.load(url, { sync: false }).then(() => {
-        const c = nc.colors[0]; hook.setColor(c.hex, { animate: false, spec: c.spec ?? 1 }); $('hookKicker').textContent = nc.short; }));
-    } else {
+    const beat = hookBeats[hookState.step % hookBeats.length]; hookState.step++;
+    const label = (txt) => { $('hookKicker').textContent = `${car.short} · ${txt}`; };
+    if (beat === 'color') {
       hookState.color = (hookState.color + 1) % car.colors.length;
-      const c = car.colors[hookState.color]; hook.setColor(c.hex, { spec: c.spec ?? 1 });
-      $('hookKicker').textContent = `${car.short} · ${c.name}`;
+      const c = car.colors[hookState.color]; hook.setColor(c.hex, { spec: c.spec ?? 1 }); label(c.name);
+    } else if (beat === 'env') {
+      hookState.env = (hookState.env + 1) % G.envs.length; hookState.mod = 'stock';
+      resolveClip(car.id, G.envs[hookState.env].id, 'stock').then(({ url }) => hook.load(url, { sync: true })); label(G.envs[hookState.env].name);
+    } else if (beat === 'mod') {
+      const m = car.mods[1]; hookState.mod = m.id;
+      resolveClip(car.id, G.envs[hookState.env].id, m.id).then(({ url }) => hook.load(url, { sync: true })); label(m.name);
+    } else {
+      hookState.car = (hookState.car + 1) % G.cars.length; hookState.color = 0; hookState.mod = 'stock';
+      const nc = G.cars[hookState.car];
+      resolveClip(nc.id, G.envs[hookState.env].id, 'stock').then(({ url }) => hook.load(url, { sync: true }).then(() => {
+        const c = nc.colors[0]; hook.setColor(c.hex, { animate: false, spec: c.spec ?? 1 }); $('hookKicker').textContent = nc.short; }));
     }
-    hookState.timer = setTimeout(hookTick, 1900);
+    hookState.timer = setTimeout(hookTick, beat === 'car' ? 2200 : 1900);
   }
   const io = new IntersectionObserver(([e]) => {
     const vis = e.isIntersecting && $('pv').hidden && $('loader').hidden;
@@ -103,7 +111,7 @@
 
   async function open() {
     const fromCar = G.cars[hookState.car];
-    st.car = fromCar.id; st.color = hookState.color; st.mod = 'stock'; st.env = G.envs[hookState.env].id;
+    st.car = fromCar.id; st.color = hookState.color; st.mod = hookState.mod; st.env = G.envs[hookState.env].id;
     hookState.on = false; clearTimeout(hookState.timer); hook.pause();
     $('loader').hidden = false; $('fb').setAttribute('aria-hidden', 'true');
     let p = 0; const bar = $('loadBar');
