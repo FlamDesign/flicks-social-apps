@@ -68,8 +68,8 @@
       $('cars').appendChild(b);
     });
     const car = carById(st.car); $('carName').textContent = `${car.year} ${car.name}`;
-    $('ctaTitle').textContent = `${car.year} ${car.logo ? car.short : car.name}`; $('ctaBtn').href = car.cta;
-    const lg = $('ctaLogo'); if (car.logo) { lg.innerHTML = `<img src="${car.logo}" alt="">`; lg.classList.add('logo'); } else { lg.textContent = car.id === 'corvette' ? 'CHEV' : 'GM'; lg.classList.remove('logo'); }
+    $('ctaTitle').textContent = car.logo ? car.short : `${car.year} ${car.name}`; $('ctaBtn').href = car.cta;
+    const lg = $('ctaLogo'); if (car.logo) { lg.innerHTML = `<img src="${car.logo}" alt="">`; lg.classList.add('logo'); } else { lg.textContent = 'GM'; lg.classList.remove('logo'); }
   }
   function renderColors() {
     const car = carById(st.car); $('swatches').innerHTML = '';

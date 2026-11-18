@@ -30,7 +30,7 @@ window.GM = {
     },
     {
       id: 'corvette', name: 'Chevrolet Corvette Grand Sport', short: 'Corvette Grand Sport', year: 2027,
-      thumb: 'media/car_corvette.jpg', cta: 'https://www.chevrolet.com/performance/corvette',
+      thumb: 'media/car_corvette.jpg', logo: 'media/logo_chevrolet.png', cta: 'https://www.chevrolet.com/performance/corvette',
       colors: [
         { name: 'Torch Red', hex: '#c8102e' },
         { name: 'Competition Yellow Tintcoat', hex: '#f2c200' },
