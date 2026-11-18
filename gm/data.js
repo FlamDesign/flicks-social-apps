@@ -23,9 +23,9 @@ window.GM = {
       ],
       mods: [
         { id: 'stock', name: 'Stock' },
-        { id: 'at4x', name: 'AT4X kit' },      // 2" lift, 35" MT tires, AT4X hood and fascia
-        { id: 'aev', name: 'AEV Edition' },    // AEV steel bumpers, 18" Salta wheels, rocker protection
-        { id: 'denali', name: 'Denali' },      // Denali chrome grille
+        { id: 'boat', name: 'Boat in tow' },       // 20 ft centre-console boat on a trailer
+        { id: 'camper', name: 'Camper in tow' },   // 22 ft aluminium travel trailer
+        { id: 'overland', name: 'Overland rack' }, // bed rack, rooftop tent, recovery boards, light bar
       ],
     },
     {

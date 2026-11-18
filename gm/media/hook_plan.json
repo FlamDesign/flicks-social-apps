@@ -1,14 +1,86 @@
 [
- {"car":"sierra","env":"lake","mod":"stock","col":"#0c0c0e","label":"Sierra 1500 · Onyx Black"},
- {"car":"sierra","env":"lake","mod":"stock","col":"#8d1a1f","label":"Sierra 1500 · Mesa Red"},
- {"car":"sierra","env":"desert","mod":"stock","col":"#8d1a1f","label":"Sierra 1500 · Desert canyon"},
- {"car":"sierra","env":"desert","mod":"at4x","col":"#8d1a1f","label":"Sierra 1500 · AT4X kit"},
- {"car":"corvette","env":"coast","mod":"stock","col":"#f2c200","label":"Corvette Grand Sport · Competition Yellow"},
- {"car":"corvette","env":"coast","mod":"stock","col":"#df561a","label":"Corvette Grand Sport · Sebring Orange"},
- {"car":"corvette","env":"lake","mod":"stock","col":"#df561a","label":"Corvette Grand Sport · Mountain lake"},
- {"car":"corvette","env":"lake","mod":"stripes","col":"#df561a","label":"Corvette Grand Sport · Racing stripes"},
- {"car":"hummer","env":"desert","mod":"stock","col":"#f1c000","label":"HUMMER EV SUV · ICON"},
- {"car":"hummer","env":"desert","mod":"stock","col":"#1e3d6a","label":"HUMMER EV SUV · Azurite Blue"},
- {"car":"hummer","env":"coast","mod":"stock","col":"#1e3d6a","label":"HUMMER EV SUV · Coast road"},
- {"car":"hummer","env":"coast","mod":"offroad","col":"#1e3d6a","label":"HUMMER EV SUV · Extreme Off-Road"}
+ {
+  "car": "sierra",
+  "env": "lake",
+  "mod": "stock",
+  "col": "#0c0c0e",
+  "label": "Sierra 1500 \u00b7 Onyx Black"
+ },
+ {
+  "car": "sierra",
+  "env": "lake",
+  "mod": "boat",
+  "col": "#0c0c0e",
+  "label": "Sierra 1500 \u00b7 Boat in tow"
+ },
+ {
+  "car": "sierra",
+  "env": "lake",
+  "mod": "boat",
+  "col": "#8d1a1f",
+  "label": "Sierra 1500 \u00b7 Mesa Red"
+ },
+ {
+  "car": "sierra",
+  "env": "desert",
+  "mod": "camper",
+  "col": "#8d1a1f",
+  "label": "Sierra 1500 \u00b7 Camper in tow"
+ },
+ {
+  "car": "corvette",
+  "env": "coast",
+  "mod": "stock",
+  "col": "#f2c200",
+  "label": "Corvette Grand Sport \u00b7 Competition Yellow"
+ },
+ {
+  "car": "corvette",
+  "env": "coast",
+  "mod": "stripes",
+  "col": "#f2c200",
+  "label": "Corvette Grand Sport \u00b7 Racing stripes"
+ },
+ {
+  "car": "corvette",
+  "env": "coast",
+  "mod": "stripes",
+  "col": "#df561a",
+  "label": "Corvette Grand Sport \u00b7 Sebring Orange"
+ },
+ {
+  "car": "corvette",
+  "env": "lake",
+  "mod": "stripes",
+  "col": "#df561a",
+  "label": "Corvette Grand Sport \u00b7 Mountain lake"
+ },
+ {
+  "car": "hummer",
+  "env": "desert",
+  "mod": "stock",
+  "col": "#f1c000",
+  "label": "HUMMER EV SUV \u00b7 ICON"
+ },
+ {
+  "car": "hummer",
+  "env": "lake",
+  "mod": "kayaks",
+  "col": "#f1c000",
+  "label": "HUMMER EV SUV \u00b7 Kayak rack"
+ },
+ {
+  "car": "hummer",
+  "env": "lake",
+  "mod": "kayaks",
+  "col": "#1e3d6a",
+  "label": "HUMMER EV SUV \u00b7 Azurite Blue"
+ },
+ {
+  "car": "hummer",
+  "env": "coast",
+  "mod": "stock",
+  "col": "#1e3d6a",
+  "label": "HUMMER EV SUV \u00b7 Coast road"
+ }
 ]

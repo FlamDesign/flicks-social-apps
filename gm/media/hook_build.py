@@ -6,7 +6,7 @@ from recol import recol
 M='/home/claude/flicks-social-apps/gm/media/'
 import json as _j
 PLAN = _j.load(open(sys.argv[1]))      # [{car, env, mod, col, label}] one per beat
-BEAT, SW, OFF = 1.0, 0.45, 60          # seconds per beat, sweep length, start frame inside each drive
+BEAT, SW, OFF = 1.0, 0.45, 12          # seconds per beat, sweep length, start frame inside each drive
 W, H, Y0 = 720, 900, 150               # 4:5 crop of the 720x1280 clips
 caps = {}
 def frame(b, n):
