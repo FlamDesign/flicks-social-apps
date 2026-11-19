@@ -4,9 +4,10 @@
 # Writes media/hook.mp4 and media/hook.json (the beat schedule the page uses for its caption and tap-to-open state).
 import sys, json; sys.path.insert(0,'/home/claude/seg')
 import cv2, numpy as np, subprocess
-from recol import recol, key as rkey, lin as rlin
+from recol import recol, key_parts as rkey, lin as rlin
 M='/home/claude/flicks-social-apps/gm/media/'
 PLAN = json.load(open(sys.argv[1]))
+OUT = (sys.argv[2].rstrip('/') + '/') if len(sys.argv) > 2 else M   # where hook.mp4 / hook.json go (source clips always come from M)
 BEAT, SW, OFF = 1.0, 0.72, 12          # seconds per beat, transition length, start frame inside each drive
 W, H, Y0, FH = 720, 900, 150, 1280     # 4:5 crop of the 720x1280 clips
 ss = lambda e0, e1, x: (lambda t: t*t*(3-2*t))(np.clip((x-e0)/(e1-e0), 0, 1))
@@ -16,7 +17,7 @@ def frame(b, n):
     if k not in caps: caps[k] = cv2.VideoCapture(f"{M}{k[0]}_{k[1]}_{k[2]}.mp4")
     c = caps[k]; c.set(cv2.CAP_PROP_POS_FRAMES, n); ok, f = c.read()
     img, m = recol(f, b['col'])
-    km, _, rd, bd = rkey(rlin(f[Y0:Y0+H, :, ::-1].astype(np.float32)/255.0))
+    km, _, _, rd, bd = rkey(rlin(f[Y0:Y0+H, :, ::-1].astype(np.float32)/255.0))
     conf = ss(0.45, 0.75, km)*ss(0.15, 0.28, (rd + bd)/0.85)          # confident, well-lit paint only (no red rock, no haze)
     return img[Y0:Y0+H].astype(np.float32)/255.0, conf.astype(np.float32)   # confident paint only
 def carStart(i):
@@ -41,7 +42,7 @@ def remap(img, dx, dy): return cv2.remap(img, (xs+dx).astype(np.float32), (ys+dy
 
 N = int(len(PLAN)*BEAT*24)
 p = subprocess.Popen(['ffmpeg','-v','error','-y','-f','rawvideo','-pix_fmt','bgr24','-s',f'{W}x{H}','-r','24','-i','-',
-    '-c:v','libx264','-preset','slow','-crf','23','-pix_fmt','yuv420p','-movflags','+faststart','-an',M+'hook.mp4'], stdin=subprocess.PIPE)
+    '-c:v','libx264','-preset','slow','-crf','23','-pix_fmt','yuv420p','-movflags','+faststart','-an',OUT+'hook.mp4'], stdin=subprocess.PIPE)
 fidx = lambda i, n: OFF + n - int(carStart(i)*BEAT*24)
 for n in range(N):
     t = n/24; i = int(t//BEAT); b = PLAN[i]
@@ -76,5 +77,5 @@ for n in range(N):
         out = srgb(c + glow*region[...,None])
     p.stdin.write((np.clip(out,0,1)*255).astype(np.uint8).tobytes())
 p.stdin.close(); p.wait()
-json.dump([{'t': i*BEAT, 'label': b['label'], 'car': b['car'], 'env': b['env'], 'mod': b['mod'], 'col': b['col']} for i, b in enumerate(PLAN)], open(M+'hook.json','w'))
+json.dump([{'t': i*BEAT, 'label': b['label'], 'car': b['car'], 'env': b['env'], 'mod': b['mod'], 'col': b['col']} for i, b in enumerate(PLAN)], open(OUT+'hook.json','w'))
 print('ok', N, 'frames', [modeOf(i) for i in range(len(PLAN))])

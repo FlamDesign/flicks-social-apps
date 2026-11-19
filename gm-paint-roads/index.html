@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#ffffff" />
+  <title>GM configurator: paint and roads</title>
+  <meta name="author" content="Flam" />
+  <link rel="icon" href="data:," />
+  <link rel="stylesheet" href="../gm/style.css" />
+</head>
+<body>
+  <div class="device" id="device">
+    <!-- Facebook feed -->
+    <section class="fb" id="fb" aria-label="Facebook feed">
+      <header class="fb-top">
+        <span class="fb-word">facebook</span>
+        <div class="fb-top-icons">
+          <button class="ic-btn" aria-label="Create"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+          <button class="ic-btn" aria-label="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
+          <button class="ic-btn" aria-label="Messenger"><svg viewBox="0 0 24 24"><path d="M12 3C7 3 3 6.7 3 11.3c0 2.6 1.3 4.9 3.3 6.4V21l3-1.7c.9.3 1.8.4 2.7.4 5 0 9-3.7 9-8.4S17 3 12 3Z"/><path d="m7.5 13.5 3-3.2 2.2 2 3.8-2.8-3 3.2-2.2-2Z" fill="currentColor" stroke="none"/></svg></button>
+        </div>
+      </header>
+      <nav class="fb-tabs" aria-label="Sections">
+        <span class="on"><svg viewBox="0 0 24 24"><path d="M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1Z"/></svg></span>
+        <span><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="m10 9 5 3-5 3Z"/></svg></span>
+        <span><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><circle cx="17" cy="9" r="2.5"/><path d="M16.5 14c2.6.1 4.4 1.8 5 4.5"/></svg></span>
+        <span><svg viewBox="0 0 24 24"><path d="M4 9h16l-1 11H5Z"/><path d="M8 9V7a4 4 0 0 1 8 0v2"/></svg></span>
+        <span><svg viewBox="0 0 24 24"><path d="M6 17V11a6 6 0 0 1 12 0v6l1.5 2h-15Z"/><path d="M10 21h4"/></svg></span>
+        <span><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></span>
+      </nav>
+      <div class="fb-scroll" id="feed">
+        <div class="composer">
+          <div class="av av-me"></div>
+          <div class="composer-in">What's on your mind?</div>
+          <svg class="composer-ic" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-8 8"/></svg>
+        </div>
+
+        <article class="post">
+          <div class="post-h">
+            <div class="av" style="background:url(../gm/media/feed_maya_av.jpg) center/cover"></div>
+            <div class="post-meta"><b>Maya Okafor</b><span>2h · <svg viewBox="0 0 24 24" class="glb"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 3 2.5 15 0 18M12 3c-2.5 3-2.5 15 0 18"/></svg></span></div>
+            <span class="more">···</span>
+          </div>
+          <p class="post-t">Finally did the drive up to the lake before the first snow. Worth every switchback.</p>
+          <div class="post-photo organic-1" role="img" aria-label="A woman playing with her golden retriever by a mountain lake"></div>
+          <div class="reacts"><span><i class="r-like"></i><i class="r-heart"></i> 214</span><span>31 comments</span></div>
+          <div class="acts"><span>Like</span><span>Comment</span><span>Share</span></div>
+        </article>
+
+        <!-- GM sponsored hook -->
+        <article class="post ad" id="gmAd">
+          <div class="post-h">
+            <div class="av av-gm" aria-hidden="true"><img src="../gm/media/logo_gm.svg" alt=""></div>
+            <div class="post-meta"><b>General Motors</b><span>Sponsored · <svg viewBox="0 0 24 24" class="glb"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 3 2.5 15 0 18M12 3c-2.5 3-2.5 15 0 18"/></svg></span></div>
+            <span class="more">···</span>
+          </div>
+          <p class="post-t">Three icons. Every colour, every build, every road. Make yours right here.</p>
+          <button class="hook" id="hook" aria-label="Open the configurator">
+            <video id="hookVideo" src="media/hook.mp4" poster="media/hook_poster.jpg" muted loop playsinline webkit-playsinline preload="auto"></video>
+            <div class="hook-copy" id="hookCopy">
+              <span class="hook-line">Configure your car.</span>
+              <span class="hook-kicker" id="hookKicker">Sierra 1500</span>
+            </div>
+            <span class="tap-ring"><span>Tap to<br/>start</span></span>
+          </button>
+          <div class="ad-bar">
+            <div><small>GM.COM</small><b>Pick the paint and the road, right in the ad</b></div>
+            <button class="ad-cta" id="hookCta">Configure</button>
+          </div>
+          <div class="reacts"><span><i class="r-like"></i><i class="r-heart"></i> 3.4K</span><span>412 comments</span></div>
+          <div class="acts"><span>Like</span><span>Comment</span><span>Share</span></div>
+        </article>
+
+        <article class="post">
+          <div class="post-h">
+            <div class="av" style="background:url(../gm/media/feed_dev_av.jpg) center/cover"></div>
+            <div class="post-meta"><b>Dev Raman</b><span>5h · <svg viewBox="0 0 24 24" class="glb"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 3 2.5 15 0 18M12 3c-2.5 3-2.5 15 0 18"/></svg></span></div>
+            <span class="more">···</span>
+          </div>
+          <p class="post-t">Coffee, then the coast road. Saturday plan sorted.</p>
+          <div class="post-photo organic-2" role="img" aria-label="A man having coffee on a patio above the coast road and beach"></div>
+          <div class="reacts"><span><i class="r-like"></i><i class="r-heart"></i> 88</span><span>9 comments</span></div>
+          <div class="acts"><span>Like</span><span>Comment</span><span>Share</span></div>
+        </article>
+        <div class="feed-end"></div>
+      </div>
+    </section>
+
+    <!-- Loading -->
+    <section class="loader" id="loader" hidden>
+      <header class="pv-h"><button class="x" id="loaderX" aria-label="Close">✕</button><div><b>General Motors</b><small>Preview</small></div><span></span></header>
+      <div class="loader-mid">
+        <b>General Motors</b>
+        <div class="loader-badge"><img src="../gm/media/logo_gm.svg" alt="General Motors"></div>
+        <small id="loadPct">Loading, 0% complete</small>
+        <div class="bar"><i id="loadBar"></i></div>
+      </div>
+    </section>
+
+    <!-- Configurator card -->
+    <section class="pv" id="pv" hidden>
+      <header class="pv-h"><button class="x" id="pvX" aria-label="Close">✕</button><div><b>General Motors</b><small>Preview</small></div><span></span></header>
+      <div class="card">
+        <canvas id="cfgCanvas"></canvas>
+        <div class="cars" id="cars" role="tablist" aria-label="Choose a vehicle"></div>
+        <div class="car-name" id="carName"></div>
+        <div class="panel">
+          <div class="row"><label>Color <em id="colName"></em></label><div class="sw" id="swatches"></div></div>
+          <div class="row"><label>Modification</label><div class="mods" id="mods"></div></div>
+          <div class="row"><label>Environment</label><div class="envs" id="envs"></div></div>
+        </div>
+      </div>
+      <footer class="pv-f">
+        <div class="pv-brand"><div class="av av-brand sm" id="ctaLogo">GM</div><div><b id="ctaTitle">2027 GMC Sierra 1500</b><small>Build &amp; Price at gm.com</small></div></div>
+        <a class="pv-cta" id="ctaBtn" href="https://www.gmc.com/trucks/sierra/1500" target="_blank" rel="noopener">Build &amp; Price</a>
+      </footer>
+    </section>
+  </div>
+  <p class="disclaimer">Prototype by Flam for partner conversations. Not affiliated with or endorsed by Meta or General Motors. Colours are approximations.</p>
+  <script src="../gm/data.js"></script>
+  <script src="config.js"></script>
+  <script src="../gm/engine.js"></script>
+  <script src="../gm/app.js"></script>
+</body>
+</html>

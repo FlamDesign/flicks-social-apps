@@ -1,0 +1,86 @@
+[
+ {
+  "car": "sierra",
+  "env": "lake",
+  "mod": "stock",
+  "col": "#0c0c0e",
+  "label": "Sierra 1500 \u00b7 Onyx Black"
+ },
+ {
+  "car": "sierra",
+  "env": "lake",
+  "mod": "boat",
+  "col": "#0c0c0e",
+  "label": "Sierra 1500 \u00b7 Boat in tow"
+ },
+ {
+  "car": "sierra",
+  "env": "lake",
+  "mod": "boat",
+  "col": "#8d1a1f",
+  "label": "Sierra 1500 \u00b7 Mesa Red"
+ },
+ {
+  "car": "sierra",
+  "env": "lake",
+  "mod": "overland",
+  "col": "#8d1a1f",
+  "label": "Sierra 1500 \u00b7 Overland rack"
+ },
+ {
+  "car": "corvette",
+  "env": "lake",
+  "mod": "stock",
+  "col": "#f2c200",
+  "label": "Corvette Grand Sport \u00b7 Competition Yellow"
+ },
+ {
+  "car": "corvette",
+  "env": "lake",
+  "mod": "carbon",
+  "col": "#f2c200",
+  "label": "Corvette Grand Sport \u00b7 Carbon hood & roof"
+ },
+ {
+  "car": "corvette",
+  "env": "lake",
+  "mod": "carbon",
+  "col": "#df561a",
+  "label": "Corvette Grand Sport \u00b7 Sebring Orange"
+ },
+ {
+  "car": "corvette",
+  "env": "lake",
+  "mod": "stripes",
+  "col": "#df561a",
+  "label": "Corvette Grand Sport \u00b7 Racing stripes"
+ },
+ {
+  "car": "hummer",
+  "env": "lake",
+  "mod": "stock",
+  "col": "#f1c000",
+  "label": "HUMMER EV SUV \u00b7 ICON"
+ },
+ {
+  "car": "hummer",
+  "env": "lake",
+  "mod": "kayaks",
+  "col": "#f1c000",
+  "label": "HUMMER EV SUV \u00b7 Kayak rack"
+ },
+ {
+  "car": "hummer",
+  "env": "lake",
+  "mod": "rooftent",
+  "col": "#1e3d6a",
+  "label": "HUMMER EV SUV \u00b7 Rooftop tent"
+ },
+ {
+  "car": "hummer",
+  "env": "lake",
+  "mod": "rooftent",
+  "col": "#5b2b22",
+  "label": "HUMMER EV SUV \u00b7 Dark Ember"
+ }
+]

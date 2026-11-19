@@ -18,6 +18,7 @@
   const float SRC_ASPECT = 0.5625;
   vec3 lin(vec3 c){ return pow(max(c,0.0), vec3(2.2)); }
   vec3 srgb(vec3 c){ return pow(clamp(c,0.0,1.0), vec3(1.0/2.2)); }
+  // strict key: confident magenta paint. Returns (mask, white/spec part, diffuse paint strength).
   vec3 key(vec3 l){
     float spec = min(l.g, min(l.r, l.b));
     float rd = l.r - spec, bd = l.b - spec, mx = max(max(l.r, l.b), 1e-5);
@@ -25,16 +26,31 @@
     float m = smoothstep(0.22, 0.45, sat) * smoothstep(0.012, 0.06, ratio) * (1.0 - smoothstep(2.6, 4.0, ratio)) * smoothstep(0.002, 0.008, mx);
     return vec3(m, spec, (rd + bd)/0.85);
   }
+  // loose key: pale sky reflections on the paint and anti-aliased edges (only trusted next to confident paint)
+  float keyWeak(vec3 l){
+    float spec = min(l.g, min(l.r, l.b));
+    float rd = l.r - spec, bd = l.b - spec, mx = max(max(l.r, l.b), 1e-5);
+    float sat = (mx - l.g)/mx, ratio = bd/max(rd, 1e-5);
+    return smoothstep(0.05, 0.16, sat) * smoothstep(0.012, 0.06, ratio) * (1.0 - smoothstep(4.5, 7.5, ratio)) * smoothstep(0.002, 0.006, mx);
+  }
   vec2 cq(vec4 cell, vec2 p){ return cell.xy + clamp(p, 0.002, 0.998)*cell.zw; }
   vec3 shade(sampler2D t, vec4 cell, vec2 px, vec4 col, vec2 p){
     vec2 q = cq(cell, p);
     vec3 l = lin(texture2D(t, q).rgb); vec3 k = key(l);
     float D = k.z*0.4 + 0.15*(key(lin(texture2D(t, q+vec2(px.x,0.)).rgb)).z + key(lin(texture2D(t, q-vec2(px.x,0.)).rgb)).z
                             + key(lin(texture2D(t, q+vec2(0.,px.y)).rgb)).z + key(lin(texture2D(t, q-vec2(0.,px.y)).rgb)).z);
+    // how close confident paint is (ring of 8 taps ~9 source px away): pale reflections and edges count only here
+    vec2 r = px*9.0; float n = k.x;
+    n = max(n, key(lin(texture2D(t, q + vec2( r.x, 0.0)).rgb)).x); n = max(n, key(lin(texture2D(t, q - vec2( r.x, 0.0)).rgb)).x);
+    n = max(n, key(lin(texture2D(t, q + vec2(0.0,  r.y)).rgb)).x); n = max(n, key(lin(texture2D(t, q - vec2(0.0,  r.y)).rgb)).x);
+    n = max(n, key(lin(texture2D(t, q + r*0.7).rgb)).x);           n = max(n, key(lin(texture2D(t, q - r*0.7).rgb)).x);
+    n = max(n, key(lin(texture2D(t, q + vec2(r.x, -r.y)*0.7).rgb)).x); n = max(n, key(lin(texture2D(t, q + vec2(-r.x, r.y)*0.7).rgb)).x);
+    float near = smoothstep(0.3, 0.8, n);
+    float m = max(k.x, keyWeak(l)*near);
     vec3 o = col.rgb*D + vec3(k.y)*col.a + col.rgb*k.y*(1.0-col.a)*0.6;
-    return mix(l, o, k.x);
+    float s = max(0.0, min(l.r, l.b) - l.g)*near;                   // despill: strip leftover magenta next to the paint
+    return mix(l - vec3(s, 0.0, s), o, m);
   }
-  // confident, well-lit paint only: shaded red rock and purple haze key weakly and never count
   float km(sampler2D t, vec4 cell, vec2 p){ vec3 k = key(lin(texture2D(t, cq(cell, p)).rgb)); return smoothstep(0.45, 0.75, k.x)*smoothstep(0.15, 0.28, k.z); }
   // soft body mask of the car before and after (paint key, widened so the ripple flows over whole panels)
   float carMask(vec2 p){
@@ -91,12 +107,12 @@
     gl_FragColor = vec4(srgb(c), 1.0);
   }`;
   const hex = (h, spec = 1) => { const n = parseInt(h.slice(1), 16); return [(n>>16&255)/255, (n>>8&255)/255, (n&255)/255].map((c) => Math.pow(c, 2.2)).concat([spec]); };
-  const GRID = [6, 2];
-  const cellOf = (i) => [ (i % GRID[0])/GRID[0], Math.floor(i / GRID[0])/GRID[1], 1/GRID[0], 1/GRID[1] ];
+  // grid of cells packed in each vehicle's video (columns, rows); the full configurator uses 6x2, lighter versions fewer
+  const cellOf = (i, g) => [ (i % g[0])/g[0], Math.floor(i / g[0])/g[1], 1/g[0], 1/g[1] ];
 
   class PaintPlayer {
-    constructor(canvas, { aspect = 9/16, focusY = 0.45 } = {}) {
-      this.c = canvas; this.aspect = aspect; this.focusY = focusY;
+    constructor(canvas, { aspect = 9/16, focusY = 0.45, grid = [6, 2] } = {}) {
+      this.c = canvas; this.aspect = aspect; this.focusY = focusY; this.grid = grid;
       const gl = this.gl = canvas.getContext('webgl', { premultipliedAlpha: false });
       if (!gl) throw new Error('WebGL unavailable');
       const sh = (t, s) => { const o = gl.createShader(t); gl.shaderSource(o, s); gl.compileShader(o); if (!gl.getShaderParameter(o, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(o)); return o; };
@@ -130,7 +146,7 @@
     /* Show cell `cell` of video `url` in colour `colHex`, with the sweep from whatever is on screen. */
     /* mode 'car' = ripple across the car body (paint, package, vehicle); 'road' = single ring across the scenery. */
     show(url, cell, colHex, { spec = 1, animate = true, mode = 'car' } = {}) {
-      const v = this.preload(url), next = { v, cell: cellOf(cell), col: hex(colHex, spec) }, t0 = performance.now();
+      const v = this.preload(url), next = { v, cell: cellOf(cell, this.grid), col: hex(colHex, spec) }, t0 = performance.now();
       const go = () => {
         v.play().catch(() => {});
         (window.__gmVisibleMs = window.__gmVisibleMs || []).push(Math.round(performance.now() - t0));
@@ -156,7 +172,7 @@
           gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, this.texFor(s.v));
           if (!up.has(s.v) && s.v.readyState >= 2) { gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, s.v); up.add(s.v); }
         });
-        const px = (s) => [1/(s.v.videoWidth || 3240), 1/(s.v.videoHeight || 1920)];
+        const px = (s) => [1/(s.v.videoWidth || 540*this.grid[0]), 1/(s.v.videoHeight || 960*this.grid[1])];
         gl.uniform4fv(this.u.cellA, this.A.cell); gl.uniform4fv(this.u.cellB, this.B.cell);
         gl.uniform2fv(this.u.pxA, px(this.A)); gl.uniform2fv(this.u.pxB, px(this.B));
         gl.uniform4fv(this.u.colA, this.A.col); gl.uniform4fv(this.u.colB, this.B.col);

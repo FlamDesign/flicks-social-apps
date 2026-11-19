@@ -47,7 +47,7 @@
   let cfg = null;
   const st = { car: 'sierra', color: 0, mod: 'stock', env: 'lake' };
   function ensureCfg() {
-    if (!cfg) { cfg = new PaintPlayer($('cfgCanvas'), { focusY: 0.46 }); Object.values(blobs).forEach((u) => cfg.preload(u)); }
+    if (!cfg) { cfg = new PaintPlayer($('cfgCanvas'), { focusY: 0.46, grid: G.grid || [6, 2] }); Object.values(blobs).forEach((u) => cfg.preload(u)); }
     return cfg;
   }
   // Every change (vehicle, paint, package, road) goes through here and plays the same light sweep.
@@ -98,7 +98,11 @@
       $('envs').appendChild(b);
     });
   }
-  function renderAll() { renderCars(); renderColors(); renderMods(); renderEnvs(); }
+  // lighter versions switch off a row: packages only on one road, or roads only with the stock vehicle
+  const feat = Object.assign({ mods: true, envs: true }, G.features || {});
+  if (!feat.mods) $('mods').closest('.row').hidden = true;
+  if (!feat.envs) $('envs').closest('.row').hidden = true;
+  function renderAll() { renderCars(); renderColors(); if (feat.mods) renderMods(); if (feat.envs) renderEnvs(); }
 
   async function open() {
     // open on exactly what the film was showing when tapped
