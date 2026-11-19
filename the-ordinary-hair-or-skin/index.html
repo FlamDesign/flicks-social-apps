@@ -111,7 +111,8 @@ const cache = {};
 
 intro.src = MAP.intro.src; intro.poster = MAP.intro.poster;
 function choose(on){ for (const k in hs) hs[k].classList.toggle("on", on); ask.classList.toggle("on", on); }
-intro.addEventListener("ended", () => choose(true));                 // hold on the last frame until a tap
+intro.addEventListener("ended", () => choose(true));
+intro.addEventListener("playing", () => start.classList.remove("on"));                 // hold on the last frame until a tap
 intro.play().catch(() => start.classList.add("on"));
 start.onclick = () => { start.classList.remove("on"); intro.play(); };
 /* if the browser pauses the intro (tab hidden, app switched), resume it, or offer a tap to continue */
