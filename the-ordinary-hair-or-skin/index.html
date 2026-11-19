@@ -11,6 +11,8 @@
   #stage{position:relative;width:min(100vw,100vh);height:min(100vw,100vh);overflow:hidden;background:#000;user-select:none}
   video,.poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000}
   .hide{opacity:0;pointer-events:none}
+  /* one video per branch, the three variants stacked vertically; switching = showing another third */
+  .stack{position:absolute;left:0;top:0;width:100%;height:300%;object-fit:fill;background:#000;will-change:transform}
   .fade{transition:opacity .35s}
 
   /* The Ordinary's own wordmark, fixed top-left everywhere */
@@ -86,14 +88,14 @@ const UTM = "utm_source=flam&utm_medium=flick&utm_campaign=hair_or_skin";
 const BASE = "https://theordinary.com/en-us/";
 const MAP = {
   intro: { src: "media/intro.mp4", poster: "media/intro_poster.jpg", hotspots: { skin: {x:43, y:44}, hair: {x:84, y:58} } },
-  hair: { poster: "media/hair_poster.jpg", ctaFrom: 8.42, variants: [
-    { concern:"Thinning",  head:"Fuller-looking hair, from the scalp.", product:"Multi-Peptide Serum for Hair Density",         src:"media/hair_A.mp4", thumb:"thumbs/hairdensity.webp", cta:"Shop Hair Density", url: BASE+"multi-peptide-serum-for-hair-density-hair-scalp-treatment-100434.html" },
-    { concern:"Dry scalp", head:"Hydration for a dry scalp.",           product:"Natural Moisturizing Factors + HA for Scalp",  src:"media/hair_B.mp4", thumb:"thumbs/nmfscalp.webp",    cta:"Shop Scalp Serum",  url: BASE+"natural-moisturizing-factors-ha-for-scalp-hair-scalp-treatment-100422.html" },
-    { concern:"Dull hair", head:"Soft sheen for dull hair.",            product:"100% Organic Cold-Pressed Moroccan Argan Oil", src:"media/hair_C.mp4", thumb:"thumbs/argan.webp",       cta:"Shop Argan Oil",    url: BASE+"100-organic-cold-pressed-moroccan-argan-face-oil-100393.html" } ] },
-  skin: { poster: "media/skin_poster.jpg", ctaFrom: 9.0, variants: [
-    { concern:"Blemishes",   head:"Less shine, smaller-looking pores.", product:"Niacinamide 10% + Zinc 1%",                src:"media/skin_A.mp4", thumb:"thumbs/niacinamide.webp", cta:"Shop Niacinamide",     url: BASE+"niacinamide-10-zinc-1-serum-100436.html" },
-    { concern:"Dehydration", head:"Plumping hydration for dry skin.",   product:"Hyaluronic Acid 2% + B5",                  src:"media/skin_B.mp4", thumb:"thumbs/hyaluronic.webp",  cta:"Shop Hyaluronic Acid", url: BASE+"hyaluronic-acid-2-b5-serum-with-ceramides-100637.html" },
-    { concern:"Fine lines",  head:"For visible signs of aging.",        product:"Multi-Peptide + Copper Peptides 1% Serum", src:"media/skin_C.mp4", thumb:"thumbs/copper.webp",      cta:"Shop Copper Peptides", url: BASE+"multi-peptide-copper-peptides-1-serum-100625.html" } ] }
+  hair: { poster: "media/hair_poster.jpg", stack: "media/hair_stack.mp4", ctaFrom: 8.42, variants: [
+    { concern:"Thinning",  head:"Fuller-looking hair, from the scalp.", product:"Multi-Peptide Serum for Hair Density",         thumb:"thumbs/hairdensity.webp", cta:"Shop Hair Density", url: BASE+"multi-peptide-serum-for-hair-density-hair-scalp-treatment-100434.html" },
+    { concern:"Dry scalp", head:"Hydration for a dry scalp.",           product:"Natural Moisturizing Factors + HA for Scalp",  thumb:"thumbs/nmfscalp.webp",    cta:"Shop Scalp Serum",  url: BASE+"natural-moisturizing-factors-ha-for-scalp-hair-scalp-treatment-100422.html" },
+    { concern:"Dull hair", head:"Soft sheen for dull hair.",            product:"100% Organic Cold-Pressed Moroccan Argan Oil", thumb:"thumbs/argan.webp",       cta:"Shop Argan Oil",    url: BASE+"100-organic-cold-pressed-moroccan-argan-face-oil-100393.html" } ] },
+  skin: { poster: "media/skin_poster.jpg", stack: "media/skin_stack.mp4", ctaFrom: 9.0, variants: [
+    { concern:"Blemishes",   head:"Less shine, smaller-looking pores.", product:"Niacinamide 10% + Zinc 1%",                thumb:"thumbs/niacinamide.webp", cta:"Shop Niacinamide",     url: BASE+"niacinamide-10-zinc-1-serum-100436.html" },
+    { concern:"Dehydration", head:"Plumping hydration for dry skin.",   product:"Hyaluronic Acid 2% + B5",                  thumb:"thumbs/hyaluronic.webp",  cta:"Shop Hyaluronic Acid", url: BASE+"hyaluronic-acid-2-b5-serum-with-ceramides-100637.html" },
+    { concern:"Fine lines",  head:"For visible signs of aging.",        product:"Multi-Peptide + Copper Peptides 1% Serum", thumb:"thumbs/copper.webp",      cta:"Shop Copper Peptides", url: BASE+"multi-peptide-copper-peptides-1-serum-100625.html" } ] }
 };
 
 const $ = id => document.getElementById(id);
@@ -106,47 +108,43 @@ for (const k in hs) { hs[k].style.left = MAP.intro.hotspots[k].x + "%"; hs[k].st
 /* posters + thumbnails are tiny: preload them. Branch videos are fetched only when their tap point is tapped. */
 [MAP.hair.poster, MAP.skin.poster, ...MAP.hair.variants.map(v=>v.thumb), ...MAP.skin.variants.map(v=>v.thumb)].forEach(s => { const i = new Image(); i.src = s; });
 
-let branch = null, cur = 0, videos = [], syncTimer = null, ctaLatched = false;
+let branch = null, cur = 0, vid = null, tick = null, ctaLatched = false;
 const cache = {};
 
 intro.src = MAP.intro.src; intro.poster = MAP.intro.poster;
 function choose(on){ for (const k in hs) hs[k].classList.toggle("on", on); ask.classList.toggle("on", on); }
-intro.addEventListener("ended", () => choose(true));
-intro.addEventListener("playing", () => start.classList.remove("on"));                 // hold on the last frame until a tap
+intro.addEventListener("ended", () => choose(true));                 // hold on the last frame until a tap
+intro.addEventListener("playing", () => start.classList.remove("on"));
 intro.play().catch(() => start.classList.add("on"));
-start.onclick = () => { start.classList.remove("on"); intro.play(); };
-/* if the browser pauses the intro (tab hidden, app switched), resume it, or offer a tap to continue */
+start.onclick = () => { start.classList.remove("on"); (branch ? vid : intro).play(); };
+
+/* if the browser pauses playback (tab hidden, app switched), resume it, or offer a tap to continue */
 const resumeIntro = () => { if (branch || intro.ended || !intro.paused) return; intro.play().catch(() => start.classList.add("on")); };
 intro.addEventListener("pause", () => { if (!intro.ended && !branch) setTimeout(resumeIntro, 120); });
-document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") { resumeIntro(); if (branch) videos.forEach(v => v.play().catch(()=>{})); } });
+document.addEventListener("visibilitychange", () => { if (document.visibilityState !== "visible") return; resumeIntro(); if (branch && vid && vid.paused) vid.play().catch(()=>{}); });
 
-function makeVideos(name){
+function makeVideo(name){
   if (cache[name]) return cache[name];
-  cache[name] = MAP[name].variants.map(v => {
-    const el = document.createElement("video");
-    el.className = "hide"; el.muted = true; el.playsInline = true; el.setAttribute("playsinline", "");
-    el.preload = "auto"; el.src = v.src;
-    el.addEventListener("ended", () => { if (el === videos[cur]) restart(); });                // fetched here, on tap only
-    vars.appendChild(el); return el;
-  });
-  return cache[name];
+  const el = document.createElement("video");
+  el.className = "stack hide"; el.muted = true; el.playsInline = true; el.setAttribute("playsinline", "");
+  el.loop = true; el.preload = "auto"; el.src = MAP[name].stack;     // fetched here, on tap only
+  vars.appendChild(el); cache[name] = el; return el;
 }
-const ready = list => Promise.all(list.map(v => v.readyState >= 3 ? 1 :
-  new Promise(r => { const f = () => { v.removeEventListener("canplay", f); r(); }; v.addEventListener("canplay", f); })));
+const ready = v => v.readyState >= 3 ? Promise.resolve() :
+  new Promise(r => { const f = () => { v.removeEventListener("canplay", f); r(); }; v.addEventListener("canplay", f); });
 
 async function enter(name){
   branch = name; cur = 0; ctaLatched = false; choose(false);
   intro.classList.add("hide");
   poster.src = MAP[name].poster; poster.classList.remove("hide");
   stage.classList.add("in-flick"); setChrome(name);
-  videos = makeVideos(name);
-  spin.classList.add("on"); await ready(videos); spin.classList.remove("on");
+  vid = makeVideo(name); show(0);
+  spin.classList.add("on"); await ready(vid); spin.classList.remove("on");
   if (branch !== name) return;
-  videos.forEach(v => { v.currentTime = 0; });
-  show(0);
-  await Promise.all(videos.map(v => v.play().catch(()=>{})));
+  vid.currentTime = 0; vid.classList.remove("hide");
+  await vid.play().catch(() => start.classList.add("on"));
   poster.classList.add("hide");
-  clearInterval(syncTimer); syncTimer = setInterval(sync, 200);
+  clearInterval(tick); tick = setInterval(watch, 200);
 }
 function setChrome(name){
   sw.innerHTML = "";
@@ -160,31 +158,22 @@ function setChrome(name){
   cta.classList.remove("on"); setCopy(MAP[name].variants[0]);
 }
 function setCopy(v){ copy.querySelector("h2").textContent = v.head; copy.querySelector("p").textContent = v.product; }
-function show(i){
+function show(i){                                   // same video, same frame: just show another third
   cur = i; const v = MAP[branch].variants[i];
-  videos.forEach((el, k) => el.classList.toggle("hide", k !== i));
+  if (vid) vid.style.transform = `translateY(${-i * 100 / 3}%)`;
   [...sw.children].forEach((b, k) => b.classList.toggle("act", k === i));
   setCopy(v);
   cta.textContent = v.cta; cta.href = v.url + (v.url.includes("?") ? "&" : "?") + UTM;
 }
-function restart(){                       // loop all three together from frame 0, so they never drift apart
-  videos.forEach(v => { v.currentTime = 0; v.play().catch(()=>{}); });
-}
-function sync(){
-  const lead = videos[cur]; if (!lead) return;
-  if (lead.paused && !lead.ended) lead.play().catch(()=>{});
-  videos.forEach((v, k) => {
-    if (k === cur) return;
-    if (v.ended || Math.abs(v.currentTime - lead.currentTime) > 0.06) v.currentTime = lead.currentTime;
-    if (v.paused) v.play().catch(()=>{});
-  });
-  if (!ctaLatched && lead.currentTime >= MAP[branch].ctaFrom) ctaLatched = true;   // once shown it stays through every loop
+function watch(){
+  if (!vid) return;
+  if (!ctaLatched && vid.currentTime >= MAP[branch].ctaFrom) ctaLatched = true;   // once shown it stays through every loop
   if (ctaLatched) cta.classList.add("on");
 }
 function leave(){
-  clearInterval(syncTimer); videos.forEach(v => { v.pause(); v.classList.add("hide"); });
+  clearInterval(tick); if (vid) { vid.pause(); vid.classList.add("hide"); }
   poster.classList.add("hide"); [sw, nav, copy, shade].forEach(e => e.classList.add("hide"));
-  cta.classList.remove("on"); stage.classList.remove("in-flick"); branch = null;
+  cta.classList.remove("on"); stage.classList.remove("in-flick"); branch = null; vid = null;
 }
 
 hs.hair.onclick = () => enter("hair");
