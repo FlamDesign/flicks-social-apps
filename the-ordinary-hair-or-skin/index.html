@@ -114,6 +114,10 @@ function choose(on){ for (const k in hs) hs[k].classList.toggle("on", on); ask.c
 intro.addEventListener("ended", () => choose(true));                 // hold on the last frame until a tap
 intro.play().catch(() => start.classList.add("on"));
 start.onclick = () => { start.classList.remove("on"); intro.play(); };
+/* if the browser pauses the intro (tab hidden, app switched), resume it, or offer a tap to continue */
+const resumeIntro = () => { if (branch || intro.ended || !intro.paused) return; intro.play().catch(() => start.classList.add("on")); };
+intro.addEventListener("pause", () => { if (!intro.ended && !branch) setTimeout(resumeIntro, 120); });
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") { resumeIntro(); if (branch) videos.forEach(v => v.play().catch(()=>{})); } });
 
 function makeVideos(name){
   if (cache[name]) return cache[name];
