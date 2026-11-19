@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>The Ordinary — Hair or Skin?</title>
+<style>
+  :root{--ink:#111;--paper:#f7f3ee;--accent:#fff}
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;background:#0d0d0d;font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;color:var(--ink)}
+  body{display:flex;align-items:center;justify-content:center}
+  #stage{position:relative;width:min(100vw,100vh);height:min(100vw,100vh);overflow:hidden;background:#000;user-select:none}
+  video,.poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000}
+  .hide{opacity:0;pointer-events:none}
+  video.var{transition:none}
+  /* hotspots */
+  .hs{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:.35em;cursor:pointer;opacity:0;transition:opacity .4s;pointer-events:none;border:0;background:none;font:inherit}
+  .hs.on{opacity:1;pointer-events:auto}
+  .ring{width:clamp(24px,6vmin,40px);height:clamp(24px,6vmin,40px);border-radius:50%;border:2px solid #fff;position:relative;box-shadow:0 0 0 1px rgba(0,0,0,.15)}
+  .ring::before{content:"";position:absolute;inset:36%;border-radius:50%;background:#fff}
+  .ring::after{content:"";position:absolute;inset:-2px;border-radius:50%;border:2px solid #fff;animation:pulse 1.8s ease-out infinite}
+  @keyframes pulse{from{transform:scale(1);opacity:.9}to{transform:scale(1.9);opacity:0}}
+  .tag{background:rgba(255,255,255,.94);padding:.35em .8em;border-radius:99px;font-size:clamp(11px,2.6vmin,15px);letter-spacing:.02em;font-weight:600}
+  #prompt{position:absolute;left:0;right:0;bottom:5%;text-align:center;color:#fff;font-size:clamp(12px,3vmin,17px);letter-spacing:.04em;text-shadow:0 1px 6px rgba(0,0,0,.6);opacity:0;transition:opacity .4s}
+  #prompt.on{opacity:1}
+  /* switcher */
+  #switch{position:absolute;right:3%;bottom:4%;display:flex;flex-direction:column;gap:2.2vmin;align-items:center}
+  .th{display:flex;flex-direction:column;align-items:center;gap:.6vmin;border:0;background:none;cursor:pointer;font:inherit}
+  .th img{width:clamp(44px,12vmin,76px);height:clamp(44px,12vmin,76px);border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.55);box-shadow:0 2px 10px rgba(0,0,0,.35);transition:transform .15s,border-color .15s}
+  .th.act img{border:3px solid #fff;transform:scale(1.08)}
+  .th span{color:#fff;font-size:clamp(9px,2.2vmin,12px);font-weight:600;letter-spacing:.02em;text-shadow:0 1px 4px rgba(0,0,0,.7)}
+  /* cta + chrome */
+  #cta{position:absolute;left:50%;bottom:5%;margin-left:0;translate:-50% 0;white-space:nowrap;background:#fff;color:#111;text-decoration:none;font-weight:700;font-size:clamp(12px,3vmin,16px);padding:.75em 1.3em;border-radius:99px;box-shadow:0 4px 16px rgba(0,0,0,.3);opacity:0;transform:translateY(8px);transition:opacity .35s,transform .35s;pointer-events:none}
+  #cta.on{opacity:1;transform:none;pointer-events:auto}
+  .chip{position:absolute;top:3.5%;background:rgba(255,255,255,.92);border:0;border-radius:99px;padding:.5em .95em;font:600 clamp(11px,2.6vmin,14px) inherit;font-family:inherit;cursor:pointer;color:#111}
+  #back{left:3.5%}
+  #other{right:3.5%}
+  #replay{position:absolute;left:3.5%;top:12%;width:clamp(30px,7vmin,42px);height:clamp(30px,7vmin,42px);border-radius:50%;border:0;background:rgba(255,255,255,.92);cursor:pointer;font-size:clamp(14px,3.4vmin,20px)}
+  #spin{position:absolute;left:50%;top:50%;width:36px;height:36px;margin:-18px;border-radius:50%;border:3px solid rgba(255,255,255,.35);border-top-color:#fff;animation:sp 0.8s linear infinite;opacity:0;transition:opacity .2s}
+  #spin.on{opacity:1}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  #start{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.25);border:0;cursor:pointer}
+  #start.on{display:flex}
+  #start i{width:68px;height:68px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:26px;padding-left:5px}
+</style>
+</head>
+<body>
+<div id="stage">
+  <video id="intro" playsinline muted preload="auto"></video>
+
+  <img class="poster hide" id="poster" alt="">
+  <div id="vars"></div>
+
+  <button class="hs" id="hs-skin" aria-label="Skin"><span class="ring"></span><span class="tag">Skin</span></button>
+  <button class="hs" id="hs-hair" aria-label="Hair"><span class="ring"></span><span class="tag">Hair</span></button>
+  <div id="prompt">Tap what you want to care for</div>
+
+  <div id="switch" class="hide"></div>
+  <a id="cta" target="_blank" rel="noopener"></a>
+  <button class="chip hide" id="back">‹ Back</button>
+  <button class="chip hide" id="other"></button>
+  <button id="replay" class="hide" aria-label="Replay">↺</button>
+  <div id="spin"></div>
+  <button id="start" aria-label="Play"><i>▶</i></button>
+</div>
+
+<script>
+/* ---------- branch map ---------- */
+const UTM = "utm_source=flam&utm_medium=flick&utm_campaign=hair_or_skin";
+const BASE = "https://theordinary.com/en-us/";
+const MAP = {
+  intro: { src: "media/intro.mp4", poster: "media/intro_poster.jpg",
+           hotspots: { skin: {x:43, y:44}, hair: {x:84, y:58} } },
+  hair: { label: "Hair", poster: "media/hair_poster.jpg", ctaFrom: 8.42, variants: [
+    { id:"A", concern:"Thinning",  src:"media/hair_A.mp4", thumb:"thumbs/hairdensity.webp", cta:"Shop Hair Density", url: BASE+"multi-peptide-serum-for-hair-density-hair-scalp-treatment-100434.html" },
+    { id:"B", concern:"Dry scalp", src:"media/hair_B.mp4", thumb:"thumbs/nmfscalp.webp",    cta:"Shop Scalp Serum",  url: BASE+"natural-moisturizing-factors-ha-for-scalp-hair-scalp-treatment-100422.html" },
+    { id:"C", concern:"Dull hair", src:"media/hair_C.mp4", thumb:"thumbs/argan.webp",       cta:"Shop Argan Oil",    url: BASE+"100-organic-cold-pressed-moroccan-argan-face-oil-100393.html" } ] },
+  skin: { label: "Skin", poster: "media/skin_poster.jpg", ctaFrom: 9.0, variants: [
+    { id:"A", concern:"Blemishes",   src:"media/skin_A.mp4", thumb:"thumbs/niacinamide.webp", cta:"Shop Niacinamide",      url: BASE+"niacinamide-10-zinc-1-serum-100436.html" },
+    { id:"B", concern:"Dehydration", src:"media/skin_B.mp4", thumb:"thumbs/hyaluronic.webp",  cta:"Shop Hyaluronic Acid",  url: BASE+"hyaluronic-acid-2-b5-serum-with-ceramides-100637.html" },
+    { id:"C", concern:"Fine lines",  src:"media/skin_C.mp4", thumb:"thumbs/copper.webp",      cta:"Shop Copper Peptides",  url: BASE+"multi-peptide-copper-peptides-1-serum-100625.html" } ] }
+};
+
+/* ---------- elements ---------- */
+const $ = id => document.getElementById(id);
+const intro = $("intro"), poster = $("poster"), vars = $("vars"), sw = $("switch"), cta = $("cta"),
+      back = $("back"), other = $("other"), replay = $("replay"), spin = $("spin"), start = $("start"), prompt = $("prompt");
+const hs = { skin: $("hs-skin"), hair: $("hs-hair") };
+for (const k in hs) { hs[k].style.left = MAP.intro.hotspots[k].x + "%"; hs[k].style.top = MAP.intro.hotspots[k].y + "%"; }
+
+/* thumbnails + posters are tiny: preload them; branch videos are NOT fetched until a hotspot is tapped */
+[MAP.hair.poster, MAP.skin.poster, ...MAP.hair.variants.map(v=>v.thumb), ...MAP.skin.variants.map(v=>v.thumb)]
+  .forEach(s => { const i = new Image(); i.src = s; });
+
+let branch = null, cur = 0, videos = [], syncTimer = null;
+const cache = {};   // branch -> [video,video,video], created on first tap only
+
+/* ---------- intro ---------- */
+intro.src = MAP.intro.src; intro.poster = MAP.intro.poster;
+function showHotspots(on){ for (const k in hs) hs[k].classList.toggle("on", on); prompt.classList.toggle("on", on); }
+intro.addEventListener("ended", () => showHotspots(true));        // freeze on last frame, wait for a tap
+intro.play().catch(() => start.classList.add("on"));                // autoplay blocked -> tap to start
+start.onclick = () => { start.classList.remove("on"); intro.play(); };
+
+/* ---------- branches ---------- */
+function makeVideos(name){
+  if (cache[name]) return cache[name];
+  cache[name] = MAP[name].variants.map((v, i) => {
+    const el = document.createElement("video");
+    el.className = "var hide"; el.muted = true; el.playsInline = true; el.setAttribute("playsinline", "");
+    el.preload = "auto"; el.src = v.src;                             // network request starts here, on tap
+    vars.appendChild(el); return el;
+  });
+  return cache[name];
+}
+function readyAll(list){ return Promise.all(list.map(v => v.readyState >= 3 ? 1 :
+  new Promise(r => { const f = () => { v.removeEventListener("canplay", f); r(); }; v.addEventListener("canplay", f); }))); }
+
+async function enter(name){
+  branch = name; cur = 0; showHotspots(false);
+  intro.classList.add("hide");
+  poster.src = MAP[name].poster; poster.classList.remove("hide");   // instant first frame while clips buffer
+  setChrome(name);
+  videos = makeVideos(name);
+  spin.classList.add("on");
+  await readyAll(videos);
+  spin.classList.remove("on");
+  videos.forEach(v => { v.currentTime = 0; });
+  show(0);
+  await Promise.all(videos.map(v => v.play().catch(()=>{})));
+  poster.classList.add("hide");
+  clearInterval(syncTimer); syncTimer = setInterval(sync, 250);
+}
+function setChrome(name){
+  const m = MAP[name];
+  sw.innerHTML = ""; m.variants.forEach((v, i) => {
+    const b = document.createElement("button"); b.className = "th" + (i === 0 ? " act" : "");
+    b.innerHTML = `<img src="${v.thumb}" alt="${v.concern}"><span>${v.concern}</span>`;
+    b.onclick = () => show(i); sw.appendChild(b);
+  });
+  sw.classList.remove("hide"); back.classList.remove("hide"); other.classList.remove("hide");
+  other.textContent = (name === "hair" ? "Skin" : "Hair") + " ›";
+  cta.classList.remove("on"); replay.classList.add("hide");
+}
+function show(i){
+  cur = i; const v = MAP[branch].variants[i];
+  videos.forEach((el, k) => el.classList.toggle("hide", k !== i));
+  [...sw.children].forEach((b, k) => b.classList.toggle("act", k === i));
+  cta.textContent = v.cta; cta.href = v.url + (v.url.includes("?") ? "&" : "?") + UTM;
+  if (videos[0] && videos[0].currentTime >= MAP[branch].ctaFrom) cta.classList.add("on");
+}
+function sync(){
+  const lead = videos[cur]; if (!lead) return;
+  videos.forEach((v, k) => { if (k !== cur && Math.abs(v.currentTime - lead.currentTime) > 0.06) v.currentTime = lead.currentTime; });
+  if (lead.currentTime >= MAP[branch].ctaFrom) cta.classList.add("on");
+  if (lead.ended) { clearInterval(syncTimer); videos.forEach(v => v.pause()); cta.classList.add("on"); replay.classList.remove("hide"); }
+}
+function leave(){
+  clearInterval(syncTimer); videos.forEach(v => { v.pause(); v.classList.add("hide"); });
+  poster.classList.add("hide"); sw.classList.add("hide"); back.classList.add("hide"); other.classList.add("hide");
+  replay.classList.add("hide"); cta.classList.remove("on"); branch = null;
+}
+
+/* ---------- controls ---------- */
+hs.hair.onclick = () => enter("hair");
+hs.skin.onclick = () => enter("skin");
+back.onclick = () => { leave(); intro.classList.remove("hide"); intro.currentTime = intro.duration || 9; showHotspots(true); };
+other.onclick = () => { const n = branch === "hair" ? "skin" : "hair"; leave(); enter(n); };
+replay.onclick = () => { replay.classList.add("hide"); cta.classList.remove("on");
+  videos.forEach(v => { v.currentTime = 0; v.play(); }); clearInterval(syncTimer); syncTimer = setInterval(sync, 250); };
+</script>
+</body>
+</html>
