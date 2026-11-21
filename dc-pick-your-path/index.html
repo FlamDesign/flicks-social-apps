@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pick Your Path</title>
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="data:,">
+<link rel="preload" as="font" type="font/woff2" href="fonts/plus-jakarta-sans-latin-600-normal.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="fonts/anton-latin-400-normal.woff2" crossorigin>
+<link rel="preload" as="image" href="media/poster.jpg">
+<style>
+  @font-face { font-family: "Plus Jakarta Sans"; font-weight: 500; font-display: block; src: url(fonts/plus-jakarta-sans-latin-500-normal.woff2) format("woff2"); }
+  @font-face { font-family: "Plus Jakarta Sans"; font-weight: 600; font-display: block; src: url(fonts/plus-jakarta-sans-latin-600-normal.woff2) format("woff2"); }
+  @font-face { font-family: "Anton"; font-weight: 400; font-display: block; src: url(fonts/anton-latin-400-normal.woff2) format("woff2"); }
+  :root { --s: min(100vw, 100svh); }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+  body { display: grid; place-items: center; font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif; color: #fff; }
+  #stage { position: relative; width: var(--s); height: var(--s); overflow: hidden; background: #000; user-select: none; -webkit-user-select: none; }
+  video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; pointer-events: none; }
+  video.on { opacity: 1; }
+  .layer { position: absolute; inset: 0; pointer-events: none; }
+  .fade { opacity: 0; pointer-events: none; transition: opacity .28s ease, transform .28s ease; }
+  .fade.show { opacity: 1; pointer-events: auto; }
+
+  /* start */
+  #gate { position: absolute; inset: 0; z-index: 30; display: grid; place-items: center; background: #000 url(media/poster.jpg) center/cover no-repeat; cursor: pointer; }
+  #gate::after { content: ""; position: absolute; inset: 0; background: rgba(0,0,0,.28); }
+  #gate .play { position: relative; z-index: 1; width: calc(var(--s) * .15); aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #c9ced8 45%, #8a93a6 100%); box-shadow: 0 6px 30px rgba(0,0,0,.5), inset 0 -3px 8px rgba(0,0,0,.25); display: grid; place-items: center; }
+  #gate .play::before { content: ""; margin-left: 8%; border-left: calc(var(--s) * .042) solid #1b1f2a; border-top: calc(var(--s) * .027) solid transparent; border-bottom: calc(var(--s) * .027) solid transparent; }
+
+  /* loop: hotspots + prompt */
+  .hs { position: absolute; transform: translate(-50%, -50%); width: calc(var(--s) * .16); aspect-ratio: 1; padding: 0; border: 0; background: none; cursor: pointer; pointer-events: auto; }
+  .hs i { position: absolute; left: 50%; top: 50%; width: calc(var(--s) * .05); aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%;
+          background: radial-gradient(circle at 38% 32%, #ffffff 0%, #e4e7ee 22%, #a9b0bf 58%, #6f7789 100%);
+          box-shadow: 0 2px 8px rgba(0,0,0,.45), inset 0 -2px 4px rgba(0,0,0,.25), inset 0 2px 3px rgba(255,255,255,.8);
+          transition: transform .2s, opacity .2s; }
+  .hs i::after { content: ""; position: absolute; inset: -2px; border-radius: 50%; border: 2px solid rgba(255,255,255,.7); animation: ping 1.8s ease-out infinite; }
+  .hs.sel i { transform: translate(-50%, -50%) scale(1.25); }
+  .hs.sel i::after { animation: none; border-color: #fff; }
+  .hs.dim i { opacity: .45; }
+  .hs.dim i::after { animation: none; opacity: 0; }
+  @keyframes ping { 0% { transform: scale(1); opacity: .9; } 100% { transform: scale(2.3); opacity: 0; } }
+  #prompt { position: absolute; left: 11%; top: 80.5%; font-family: Anton, Impact, "Arial Narrow Bold", sans-serif; font-size: calc(var(--s) * .062); line-height: 1.08; letter-spacing: .005em; text-shadow: 0 2px 14px rgba(0,0,0,.55); }
+
+  /* choice tray (after a hero tap): centred, large */
+  .tray { position: absolute; z-index: 12; display: flex; gap: calc(var(--s) * .03); }
+  #pickTray { left: 50%; bottom: 7.5%; transform: translateX(-50%); }
+  #pickTray.fade:not(.show) { transform: translate(-50%, 14px); }
+  #pickTray button { width: calc(var(--s) * .18); }
+  .tray button { aspect-ratio: 1; padding: 0; border-radius: 50%; border: 0; background: #111 center/cover no-repeat; cursor: pointer; box-shadow: 0 6px 22px rgba(0,0,0,.45); transition: transform .15s, box-shadow .15s; }
+  .tray button:active { transform: scale(.93); }
+
+  /* ending: tagline + CTA + switcher */
+  #endTray { right: 6.3%; bottom: 6.2%; gap: calc(var(--s) * .014); }
+  #endTray button { width: calc(var(--s) * .104); }
+  #endTray button.cur { box-shadow: 0 0 0 calc(var(--s) * .0045) #fff, 0 6px 22px rgba(0,0,0,.45); }
+  #endCopy { position: absolute; z-index: 12; left: 6.3%; bottom: 6.2%; max-width: 58%; }
+  #endCopy.fade:not(.show) { transform: translateY(10px); }
+  #tag { white-space: pre-line; margin: 0 0 calc(var(--s) * .028); font-weight: 600; font-size: calc(var(--s) * .062); line-height: 1.04; letter-spacing: -.012em; text-shadow: 0 2px 18px rgba(0,0,0,.55); }
+  #cta { display: inline-flex; align-items: center; justify-content: center; height: calc(var(--s) * .08); padding: 0 calc(var(--s) * .036); border-radius: 999px; text-decoration: none; color: #fff;
+         font-weight: 500; font-size: calc(var(--s) * .04); letter-spacing: -.005em; white-space: nowrap;
+         background: linear-gradient(180deg, #a8afc2 0%, #7c849b 55%, #646c84 100%);
+         border: calc(var(--s) * .003) solid rgba(255,255,255,.55);
+         box-shadow: inset 0 2px 3px rgba(255,255,255,.45), inset 0 -2px 4px rgba(0,0,0,.2), 0 6px 20px rgba(0,0,0,.35); }
+  #cta:active { transform: scale(.96); }
+
+  /* controls */
+  .ctl { position: absolute; top: 3.5%; z-index: 20; width: calc(var(--s) * .075); max-width: 44px; min-width: 32px; aspect-ratio: 1; border-radius: 50%; border: 1px solid rgba(255,255,255,.45); background: rgba(0,0,0,.32); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: #fff; padding: 0; display: grid; place-items: center; cursor: pointer; }
+  .ctl svg { width: 52%; height: 52%; }
+  .ctl.fade:not(.show) { pointer-events: none; }
+  #back { left: 3.5%; }
+  #mute { right: 3.5%; }
+  #replay { right: calc(3.5% + clamp(40px, calc(var(--s) * .09), 54px)); }
+
+  #spin { position: absolute; left: 50%; top: 50%; z-index: 25; width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 50%; border: 2px solid rgba(255,255,255,.25); border-top-color: #fff; animation: rot .8s linear infinite; opacity: 0; transition: opacity .15s; }
+  #spin.show { opacity: 1; }
+  @keyframes rot { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="gate" role="button" aria-label="Play"><div class="play"></div></div>
+
+  <div class="layer fade" id="loopUI">
+    <div id="prompt">TAP TO PICK<br>YOUR PATH</div>
+  </div>
+  <div class="layer" id="hot"></div>
+  <div class="fade tray" id="pickTray"></div>
+
+  <div class="fade" id="endCopy"><p id="tag"></p><a id="cta" target="_blank" rel="noopener"></a></div>
+  <div class="fade tray" id="endTray"></div>
+
+  <button class="ctl fade" id="back" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+  <button class="ctl fade" id="replay" aria-label="Replay"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4.5h4.5"/></svg></button>
+  <button class="ctl fade" id="mute" aria-label="Sound"></button>
+  <div id="spin"></div>
+</div>
+
+<script>
+/* ---------------- branch map ---------------- */
+const FANDANGO = "https://www.fandango.com/";
+const MAP = {
+  intro: "media/intro.mp4",
+  loop:  "media/loop.mp4",
+  heroes: [
+    { id: "superman", x: 55.8, y: 37.5, endings: ["luthercorp", "pocket", "fortress"] },
+    { id: "gl",       x: 27.8, y: 58.4, endings: ["gl_green", "gl_blue", "gl_red"] },
+    { id: "lois",     x: 69.5, y: 69.1, endings: ["master", "bounty", "evidence"] }
+  ],
+  endings: {
+    luthercorp: { tag: "When power\nmeets purpose.",       cta: "BOOK NOW", url: FANDANGO },
+    pocket:     { tag: "Hope travels across\ndimensions.", cta: "BOOK NOW", url: FANDANGO },
+    fortress:   { tag: "Even hope\nfaces the cold.",       cta: "BOOK NOW", url: FANDANGO },
+    gl_blue:    { tag: "Wear a symbol\nof hope.",          cta: "SHOP NOW", url: "https://shop.dc.com/products/superman-2025-movie-s-shield-hoodie?_pos=3&_sid=7dd19ad99&_ss=r" },
+    gl_green:   { tag: "Wear the\npower of will.",         cta: "SHOP NOW", url: "https://shop.dc.com/products/lanterns-hoodie-in-brightest-day-in-blackest-night" },
+    gl_red:     { tag: "Little lightning\ngoes far.",      cta: "SHOP NOW", url: "https://shop.dc.com/products/the-flash-versus-embroidered-hoodie?_pos=2&_sid=ed523e33c&_ss=r" },
+    master:     { tag: "Not every suit\nsaves lives.",     cta: "BOOK NOW", url: FANDANGO },
+    bounty:     { tag: "Hope comes\nwith a price.",        cta: "BOOK NOW", url: FANDANGO },
+    evidence:   { tag: "The truth cannot\nstay hidden.",   cta: "BOOK NOW", url: FANDANGO }
+  }
+};
+for (const [id, e] of Object.entries(MAP.endings)) { e.src = `media/${id}.mp4`; e.thumb = `media/th_${id}.webp`; }
+
+/* ---------------- player ---------------- */
+const $ = id => document.getElementById(id);
+const stage = $("stage");
+const vids = {};
+let cur = null, muted = false, state = "gate", hero = null, endingId = null, token = 0;
+const ICON_ON  = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="#fff"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>';
+const ICON_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="#fff"/><path d="M17 9.5l5 5M22 9.5l-5 5"/></svg>';
+
+function vid(src, { loop = false } = {}) {
+  if (vids[src]) return vids[src];
+  const v = document.createElement("video");
+  v.playsInline = true; v.setAttribute("playsinline", ""); v.setAttribute("webkit-playsinline", "");
+  v.preload = "auto"; v.loop = loop; v.muted = loop ? true : muted;
+  v.src = src;
+  stage.insertBefore(v, $("loopUI"));
+  v.load();
+  return (vids[src] = v);
+}
+
+function play(v) {
+  const my = ++token;
+  $("spin").classList.toggle("show", v.readyState < 3);
+  try { v.currentTime = 0; } catch (e) {}
+  if (!v.loop) v.muted = muted;
+  const swap = () => {
+    if (my !== token) return;
+    $("spin").classList.remove("show");
+    v.classList.add("on");
+    for (const o of Object.values(vids)) if (o !== v && o.classList.contains("on")) { o.classList.remove("on"); o.pause(); }
+    cur = v;
+  };
+  const p = v.play();
+  if (p) p.catch(() => { v.muted = muted = true; syncMute(); v.play().catch(() => {}); });
+  if (v.requestVideoFrameCallback) v.requestVideoFrameCallback(swap);
+  else v.addEventListener("playing", swap, { once: true });
+}
+
+function ui() {
+  const on = (id, b) => $(id).classList.toggle("show", b);
+  on("loopUI", state === "loop");
+  on("pickTray", state === "pick");
+  on("endCopy", state === "ending");
+  on("endTray", state === "ending");
+  on("back", state === "pick" || state === "ending");
+  on("replay", state === "ending");
+  on("mute", state !== "gate");
+  $("hot").style.display = (state === "loop" || state === "pick") ? "block" : "none";
+  document.querySelectorAll(".hs").forEach(b => {
+    b.classList.toggle("sel", state === "pick" && b.dataset.id === hero);
+    b.classList.toggle("dim", state === "pick" && b.dataset.id !== hero);
+  });
+}
+
+function trayButtons(el, h, onPick) {
+  el.innerHTML = "";
+  h.endings.forEach(id => {
+    const b = document.createElement("button");
+    b.dataset.id = id; b.setAttribute("aria-label", MAP.endings[id].tag);
+    b.style.backgroundImage = `url("${MAP.endings[id].thumb}")`;
+    b.onclick = () => onPick(id);
+    el.appendChild(b);
+  });
+}
+
+function toLoop() {
+  state = "loop"; hero = null; endingId = null;
+  const v = vid(MAP.loop, { loop: true });
+  if (cur !== v) play(v);
+  ui();
+}
+
+function pickHero(id) {
+  hero = id; endingId = null;
+  const h = MAP.heroes.find(x => x.id === id);
+  // only this branch starts loading, while the viewer chooses
+  h.endings.forEach(e => vid(MAP.endings[e].src));
+  trayButtons($("pickTray"), h, playEnding);
+  trayButtons($("endTray"), h, playEnding);
+  const loopV = vid(MAP.loop, { loop: true });
+  if (cur !== loopV) play(loopV);
+  state = "pick"; ui();
+}
+
+function playEnding(id) {
+  endingId = id; state = "ending";
+  const e = MAP.endings[id];
+  $("tag").textContent = e.tag;
+  $("cta").textContent = e.cta;
+  $("cta").href = e.url;
+  [...$("endTray").children].forEach(b => b.classList.toggle("cur", b.dataset.id === id));
+  ui();
+  const v = vid(e.src);
+  v.onended = () => { v.pause(); }; // hold the last frame; never roll on into another clip
+  play(v);
+}
+
+function syncMute() {
+  $("mute").innerHTML = muted ? ICON_OFF : ICON_ON;
+  for (const v of Object.values(vids)) if (!v.loop) v.muted = muted;
+}
+
+MAP.heroes.forEach(h => {
+  const b = document.createElement("button");
+  b.className = "hs"; b.dataset.id = h.id; b.setAttribute("aria-label", h.id);
+  b.style.left = h.x + "%"; b.style.top = h.y + "%";
+  b.innerHTML = "<i></i>";
+  b.onclick = () => (state === "pick" && hero === h.id) ? null : pickHero(h.id);
+  $("hot").appendChild(b);
+});
+
+$("mute").onclick = () => { muted = !muted; syncMute(); };
+$("replay").onclick = () => endingId && playEnding(endingId);
+$("back").onclick = () => state === "ending" ? pickHero(hero) : toLoop();
+
+/* intro + loop load up front; nothing else loads until a hero is tapped */
+const intro = vid(MAP.intro);
+vid(MAP.loop, { loop: true });
+intro.addEventListener("ended", () => { if (state === "intro") toLoop(); });
+
+$("gate").onclick = () => {
+  $("gate").remove();
+  state = "intro"; ui();
+  play(intro);
+};
+
+syncMute(); ui();
+</script>
+</body>
+</html>
