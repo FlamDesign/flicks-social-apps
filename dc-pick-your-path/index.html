@@ -25,7 +25,8 @@
   .fade.show { opacity: 1; pointer-events: auto; }
 
   /* start */
-  #gate { position: absolute; inset: 0; z-index: 30; display: grid; place-items: center; background: #000 url(media/poster.jpg) center/cover no-repeat; cursor: pointer; }
+  #gate { position: absolute; inset: 0; z-index: 30; display: none; place-items: center; background: #000 url(media/poster.jpg) center/cover no-repeat; cursor: pointer; }
+  #gate.on { display: grid; }
   #gate::after { content: ""; position: absolute; inset: 0; background: rgba(0,0,0,.28); }
   #gate .play { position: relative; z-index: 1; width: calc(var(--s) * .15); aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #c9ced8 45%, #8a93a6 100%); box-shadow: 0 6px 30px rgba(0,0,0,.5), inset 0 -3px 8px rgba(0,0,0,.25); display: grid; place-items: center; }
   #gate .play::before { content: ""; margin-left: 8%; border-left: calc(var(--s) * .042) solid #1b1f2a; border-top: calc(var(--s) * .027) solid transparent; border-bottom: calc(var(--s) * .027) solid transparent; }
@@ -127,7 +128,7 @@ for (const [id, e] of Object.entries(MAP.endings)) { e.src = `media/${id}.mp4`; 
 const $ = id => document.getElementById(id);
 const stage = $("stage");
 const vids = {};
-let cur = null, muted = false, state = "gate", hero = null, endingId = null, token = 0;
+let cur = null, muted = true, state = "gate", hero = null, endingId = null, token = 0;
 const ICON_ON  = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="#fff"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>';
 const ICON_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="#fff"/><path d="M17 9.5l5 5M22 9.5l-5 5"/></svg>';
 
@@ -135,7 +136,7 @@ function vid(src, { loop = false } = {}) {
   if (vids[src]) return vids[src];
   const v = document.createElement("video");
   v.playsInline = true; v.setAttribute("playsinline", ""); v.setAttribute("webkit-playsinline", "");
-  v.preload = "auto"; v.loop = loop; v.muted = loop ? true : muted;
+  v.preload = "auto"; v.loop = loop; v.silent = loop; v.muted = loop ? true : muted;
   v.src = src;
   stage.insertBefore(v, $("loopUI"));
   v.load();
@@ -146,7 +147,7 @@ function play(v) {
   const my = ++token;
   $("spin").classList.toggle("show", v.readyState < 3);
   try { v.currentTime = 0; } catch (e) {}
-  if (!v.loop) v.muted = muted;
+  if (!v.silent) v.muted = muted;
   const swap = () => {
     if (my !== token) return;
     $("spin").classList.remove("show");
@@ -155,7 +156,7 @@ function play(v) {
     cur = v;
   };
   const p = v.play();
-  if (p) p.catch(() => { v.muted = muted = true; syncMute(); v.play().catch(() => {}); });
+  if (p) p.catch(() => { if (!v.muted) { v.muted = muted = true; syncMute(); } v.play().catch(() => $("gate").classList.add("on")); });
   if (v.requestVideoFrameCallback) v.requestVideoFrameCallback(swap);
   else v.addEventListener("playing", swap, { once: true });
 }
@@ -215,13 +216,13 @@ function playEnding(id) {
   [...$("endTray").children].forEach(b => b.classList.toggle("cur", b.dataset.id === id));
   ui();
   const v = vid(e.src);
-  v.onended = () => { v.pause(); }; // hold the last frame; never roll on into another clip
+  v.loop = true; // loops inside its own clip; never rolls on into another branch
   play(v);
 }
 
 function syncMute() {
   $("mute").innerHTML = muted ? ICON_OFF : ICON_ON;
-  for (const v of Object.values(vids)) if (!v.loop) v.muted = muted;
+  for (const v of Object.values(vids)) if (!v.silent) v.muted = muted;
 }
 
 MAP.heroes.forEach(h => {
@@ -242,13 +243,23 @@ const intro = vid(MAP.intro);
 vid(MAP.loop, { loop: true });
 intro.addEventListener("ended", () => { if (state === "intro") toLoop(); });
 
+/* autoplay muted on load, like The Ordinary; the play button only appears if the browser refuses */
 $("gate").onclick = () => {
-  $("gate").remove();
+  $("gate").classList.remove("on");
+  if (state === "intro" && !cur) play(intro);
+  else if (cur) { if (!cur.silent) cur.muted = muted; cur.play().catch(() => {}); }
+};
+function start() {
   state = "intro"; ui();
   play(intro);
-};
+}
 
-syncMute(); ui();
+/* if the browser pauses playback (tab hidden, app switched), resume it, or offer a tap */
+const resume = () => { if (cur && cur.paused && !(state === "intro" && intro.ended)) cur.play().catch(() => $("gate").classList.add("on")); };
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") resume(); });
+intro.addEventListener("pause", () => { if (state === "intro" && !intro.ended && document.visibilityState === "visible") setTimeout(resume, 120); });
+
+syncMute(); start();
 </script>
 </body>
 </html>
