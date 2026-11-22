@@ -12,7 +12,7 @@ window.GM = {
     {
       id: 'sierra', name: 'GMC Sierra 1500', short: 'Sierra 1500', year: 2027,
       thumb: 'media/car_sierra.jpg', logo: 'media/logo_gmc.png', cta: 'https://www.gmc.com/trucks/sierra/1500',
-      testDrive: 'https://www.gmc.com/shopping-tools/request-a-test-drive',
+      testDrive: 'https://www.gmc.com/request-test-drive',
       colors: [
         { name: 'Summit White', hex: '#f1f1ed' },
         { name: 'Onyx Black', hex: '#0c0c0e' },
@@ -53,7 +53,7 @@ window.GM = {
     {
       id: 'hummer', name: 'GMC HUMMER EV SUV', short: 'HUMMER EV SUV', year: 2027,
       thumb: 'media/car_hummer.jpg', logo: 'media/logo_gmc.png', cta: 'https://www.gmc.com/electric/hummer-ev/suv',
-      testDrive: 'https://www.gmc.com/shopping-tools/request-a-test-drive',
+      testDrive: 'https://www.gmc.com/request-test-drive',
       colors: [
         { name: 'ICON', hex: '#f1c000' },
         { name: 'Dark Ridge', hex: '#4b4e52' },
