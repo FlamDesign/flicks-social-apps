@@ -68,7 +68,12 @@
       $('cars').appendChild(b);
     });
     const car = carById(st.car); $('carName').textContent = `${car.year} ${car.name}`;
-    $('ctaTitle').textContent = car.logo ? car.short : `${car.year} ${car.name}`; $('ctaBtn').href = car.cta;
+    $('ctaTitle').textContent = car.logo ? car.short : `${car.year} ${car.name}`;
+    // CTA: 'testdrive' pages book a test drive on the brand's site (GMC or Chevrolet); others go to Build & Price
+    if (G.ctaKind === 'testdrive' && car.testDrive) {
+      $('ctaBtn').href = car.testDrive;
+      $('ctaSub').textContent = new URL(car.testDrive).hostname.replace(/^www\./, '');   // the brand's site, like a Facebook ad bar
+    } else $('ctaBtn').href = car.cta;
     const lg = $('ctaLogo'); if (car.logo) { lg.innerHTML = `<img src="${car.logo}" alt="">`; lg.classList.add('logo'); } else { lg.textContent = 'GM'; lg.classList.remove('logo'); }
   }
   function renderColors() {

@@ -8,5 +8,6 @@
   G.atlas = (car) => `media/atlas_${car}.mp4`;
   G.grid = [4, 1];
   G.features = { envs: false };
+  G.ctaKind = 'testdrive';
   G.cell = function (car, env, mod) { const c = this.cars.find((x) => x.id === car); return Math.max(0, c.mods.findIndex((m) => m.id === mod)); };
 })();
