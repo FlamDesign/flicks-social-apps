@@ -72,6 +72,8 @@ window.GM = {
   clip: (car, env, mod) => `media/${car}_${env}_${mod}.mp4`,
   // One grid video per vehicle: 6x2 cells of 540x960, cell = road index * 4 + package index (built by build_atlas.sh)
   atlas: (car) => `media/atlas_${car}.mp4`,
+  // car silhouettes, same grid layout at half size: where pale sky reflections on the paint still count as paint
+  mask: (car) => `media/mask_${car}.mp4`,
   cell(carId, envId, modId) {
     const car = this.cars.find((c) => c.id === carId);
     return this.envs.findIndex((e) => e.id === envId) * 4 + Math.max(0, car.mods.findIndex((m) => m.id === modId));

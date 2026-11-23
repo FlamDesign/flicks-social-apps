@@ -64,7 +64,8 @@ for n in range(N):
         amp = np.sin(d*110.0)*near*0.008*region
         A2 = remap(A, amp*dx*W, amp*dy*FH); B2 = remap(B, amp*dx*W, amp*dy*FH)
         soft = 1.0 - ss(0.25, 0.75, prog)
-        zone = np.maximum(region, shape) if modeOf(i) == 'car' else region   # car changes: whole vehicle (racks, trailers) reveals behind the front
+        same_car = PLAN[i]['car'] == PLAN[j]['car']
+        zone = np.maximum(region, shape) if (modeOf(i) == 'car' and same_car) else region   # package changes: racks/trailers reveal behind the front; vehicle swaps: only the paint does, the rest dissolves
         tt = (soft*(1-zone) + ss(-0.008, 0.008, d)*zone)[..., None]   # hard reveal only where the transition belongs; dissolve elsewhere
         c = lin(B2)*(1-tt) + lin(A2)*tt
         core = np.exp(-(d/0.008)**2); edge = np.exp(-((d+0.012)/0.008)**2); sheen = np.exp(-((d+0.03)/0.06)**2)

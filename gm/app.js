@@ -20,11 +20,19 @@
       } catch (e) { console.warn('[gm] download failed, streaming instead:', url, e); progress[carId] = 1; return (blobs[carId] = url); }
     })();
   }
+  const masks = {}, maskInflight = {};
+  function fetchMask(carId) {
+    if (masks[carId] !== undefined) return Promise.resolve(masks[carId]);
+    return maskInflight[carId] = maskInflight[carId] || fetch(G.mask(carId)).then((r) => { if (!r.ok) throw new Error(r.status); return r.blob(); })
+      .then((b) => (masks[carId] = URL.createObjectURL(b)))
+      .catch((e) => { console.warn('[gm] no silhouette for', carId, e); return (masks[carId] = null); });
+  }
   async function fetchAll(first) {
     const order = [first, ...G.cars.map((c) => c.id).filter((c) => c !== first)];
-    for (const c of order) { const u = await fetchAtlas(c); if (cfg) cfg.preload(u); }
+    for (const c of order) { const u = await fetchAtlas(c); const m = await fetchMask(c); if (cfg) { cfg.preload(u); if (m) cfg.preload(m); } }
   }
   window.__gmProgress = () => ({ ...progress });
+  window.__gmEngine = () => cfg;   // debug: lets tests freeze the exact same frame
 
   /* ---------- feed hook: a pre-cut film (media/hook.mp4), plays as a plain video ---------- */
   const hv = $('hookVideo');
@@ -47,14 +55,14 @@
   let cfg = null;
   const st = { car: 'sierra', color: 0, mod: 'stock', env: 'lake' };
   function ensureCfg() {
-    if (!cfg) { cfg = new PaintPlayer($('cfgCanvas'), { focusY: 0.46, grid: G.grid || [6, 2] }); Object.values(blobs).forEach((u) => cfg.preload(u)); }
+    if (!cfg) { cfg = new PaintPlayer($('cfgCanvas'), { focusY: 0.46, grid: G.grid || [6, 2] }); Object.values(blobs).forEach((u) => cfg.preload(u)); Object.values(masks).forEach((u) => u && cfg.preload(u)); }
     return cfg;
   }
   // Every change (vehicle, paint, package, road) goes through here and plays the same light sweep.
   async function apply(animate = true, mode = 'car') {
     const t0 = performance.now();
-    const car = carById(st.car), c = car.colors[st.color], src = await fetchAtlas(st.car);
-    ensureCfg().show(src, G.cell(st.car, st.env, st.mod), c.hex, { spec: c.spec ?? 1, animate, mode });
+    const car = carById(st.car), c = car.colors[st.color], src = await fetchAtlas(st.car), mask = await fetchMask(st.car);
+    ensureCfg().show(src, G.cell(st.car, st.env, st.mod), c.hex, { spec: c.spec ?? 1, animate, mode, mask });
     (window.__gmSwitchMs = window.__gmSwitchMs || []).push(Math.round(performance.now() - t0));
     $('colName').textContent = c.name;
   }
